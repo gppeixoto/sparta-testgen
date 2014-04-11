@@ -9,4 +9,5 @@ done
 
 java -cp $CP \
     -javaagent:iagent.jar \
-    instrumentation.examples.Sample
+    instrumentation.Wrapper \
+    instrumentation.examples.Foo

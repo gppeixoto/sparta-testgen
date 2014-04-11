@@ -4,6 +4,7 @@ import instrumentation.Util;
 import instrumentation.options.ITransform;
 import instrumentation.options.entryexit.EntryExitTransformer;
 import instrumentation.options.memaccess.MemoryAccessTransformer;
+import instrumentation.options.stmt.ExecutionTracer;
 import instrumentation.options.stmt.InstructionPrinter;
 
 import java.io.PrintWriter;
@@ -46,8 +47,8 @@ public class ClassInstrumenter implements ClassFileTransformer {
      * The class will be instrumented only if 
      * it is a class of "interest"
      */
-    if (className.contains(Util.INTERESTED)) {
-
+    if (!Util.FILTER_INTEREST || className.contains(Util.INTERESTED)) {
+      
       // building class node object
       ClassReader cr = new ClassReader(classfileBuffer);
       ClassNode cnode = new ClassNode(Opcodes.ASM4);
@@ -65,6 +66,9 @@ public class ClassInstrumenter implements ClassFileTransformer {
         break;
       case INSTRUCTION_PRINTER:
         transformer = new InstructionPrinter();
+        break;
+      case EXECUTION_TRACER:
+        transformer = new ExecutionTracer();
         break;
       default:
         throw new UnsupportedOperationException();
