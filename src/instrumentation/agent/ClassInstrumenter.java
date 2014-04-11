@@ -19,7 +19,7 @@ import org.objectweb.asm.util.TraceClassVisitor;
 
 
 public class ClassInstrumenter implements ClassFileTransformer {
-	
+
   /************************************************************
    * 
    * This method is invoked for every class that the JVM is 
@@ -38,8 +38,8 @@ public class ClassInstrumenter implements ClassFileTransformer {
    *********************************************************/
   @Override
   public byte[] transform(ClassLoader loader, String className,
-                            Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
-                              byte[] classfileBuffer) throws IllegalClassFormatException {
+      Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
+      byte[] classfileBuffer) throws IllegalClassFormatException {
     byte[] result = classfileBuffer;
 
     /**
@@ -47,29 +47,29 @@ public class ClassInstrumenter implements ClassFileTransformer {
      * it is a class of "interest"
      */
     if (className.contains(Util.INTERESTED)) {
-    	
+
       // building class node object
       ClassReader cr = new ClassReader(classfileBuffer);
       ClassNode cnode = new ClassNode(Opcodes.ASM4);
       cr.accept(cnode, 0);
 
       // transforming class node object
-      
+
       ITransform transformer;
       switch (Util.OPTION) {
       case ENTRYEXIT:
-    	  transformer = new EntryExitTransformer();
-    	  break;
+        transformer = new EntryExitTransformer();
+        break;
       case MEMACCESS:
-    	  transformer = new MemoryAccessTransformer();
-    	  break;
+        transformer = new MemoryAccessTransformer();
+        break;
       case INSTRUCTION_PRINTER:
-    	  transformer = new InstructionPrinter();
-    	  break;
+        transformer = new InstructionPrinter();
+        break;
       default:
-    	  throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
       }
-      
+
       try {
         transformer.transform(cnode);
       }

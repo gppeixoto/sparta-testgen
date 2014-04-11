@@ -21,70 +21,70 @@ import org.objectweb.asm.tree.MethodNode;
  *******/
 public class InstructionPrinter implements ITransform { 
 
-	public InstructionPrinter() {
-		// empty
-	}
+  public InstructionPrinter() {
+    // empty
+  }
 
-	@SuppressWarnings("unchecked")
-	public void transform(ClassNode cn) {
-		System.out.println("cn.name: " + cn.name);
+  @SuppressWarnings("unchecked")
+  public void transform(ClassNode cn) {
+    System.out.println("cn.name: " + cn.name);
 
-		/**
-		 * Attributes
-		 */
-		List<Attribute> allAttributes = cn.attrs;
-		if (allAttributes != null) {
+    /**
+     * Attributes
+     */
+    List<Attribute> allAttributes = cn.attrs;
+    if (allAttributes != null) {
 
-			for (Attribute attr : allAttributes) {
-				System.out.println("    attr.type: " + attr.type + ", attr.toString: " + attr.toString());
-			}
+      for (Attribute attr : allAttributes) {
+        System.out.println("    attr.type: " + attr.type + ", attr.toString: " + attr.toString());
+      }
 
-		}
+    }
 
-		/**
-		 * Fields
-		 */
-		List<FieldNode> allFields = cn.fields;
-		for (FieldNode field : allFields) {
-			System.out.println("    field.name: " + field.name);
-		}
+    /**
+     * Fields
+     */
+    List<FieldNode> allFields = cn.fields;
+    for (FieldNode field : allFields) {
+      System.out.println("    field.name: " + field.name);
+    }
 
-		/**
-		 * InnerClasses
-		 */
-		List<InnerClassNode> allInnerClassNode = cn.innerClasses;
-		for (InnerClassNode innerClass : allInnerClassNode) {
-			System.out.println("    innerClass.innerName: " + innerClass.innerName +
-					", innerClass.name: " + innerClass.name +
-					", innerClass.outerName: " + innerClass.outerName);
-		}
+    /**
+     * InnerClasses
+     */
+    List<InnerClassNode> allInnerClassNode = cn.innerClasses;
+    for (InnerClassNode innerClass : allInnerClassNode) {
+      System.out.println("    innerClass.innerName: " + innerClass.innerName +
+          ", innerClass.name: " + innerClass.name +
+          ", innerClass.outerName: " + innerClass.outerName);
+    }
 
-		/**
-		 * Interfaces
-		 */
+    /**
+     * Interfaces
+     */
 
-		/**
-		 * Methods
-		 */
-		List<MethodNode> allMethods = cn.methods;
-		for (MethodNode mn : allMethods) {
+    /**
+     * Methods
+     */
+    List<MethodNode> allMethods = cn.methods;
+    for (MethodNode mn : allMethods) {
 
-			// Constructor || Destructor
-			if ("<init>".equals(mn.name) || "<clinit>".equals(mn.name))
-				continue;
+      // Constructor || Destructor
+      if ("<init>".equals(mn.name) || "<clinit>".equals(mn.name))
+        continue;
 
-			// method without lines (instructions)
-			if (mn.instructions.size() == 0)
-				continue;
+      // method without lines (instructions)
+      if (mn.instructions.size() == 0)
+        continue;
 
-			// /////////////////////////////////////
-			System.out.println("    mn.name: " + mn.name);
+      // /////////////////////////////////////
+      System.out.println("    mn.name: " + mn.name);
 
-			Iterator<AbstractInsnNode> j = mn.instructions.iterator();
-			while (j.hasNext()) {
-				AbstractInsnNode abs_ins = j.next();
-				System.out.println("        abs_ins.getOpcode(): " + abs_ins.getOpcode());
-			}
-		}
-	}
+      Iterator<AbstractInsnNode> j = mn.instructions.iterator();
+      while (j.hasNext()) {
+        AbstractInsnNode abs_ins = j.next();
+        System.out.println("        abs_ins.getOpcode(): " + abs_ins.getOpcode());
+      }
+    }
+  }
 }

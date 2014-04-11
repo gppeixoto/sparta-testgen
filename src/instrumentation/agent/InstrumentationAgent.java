@@ -14,7 +14,7 @@ import java.lang.instrument.Instrumentation;
  ***********************************************/
 
 public class InstrumentationAgent {
-	
+
   /**
    * Prints modified bytecodes on the screen, if enabled	
    */
@@ -29,5 +29,5 @@ public class InstrumentationAgent {
     // infrastructure
     inst.addTransformer(new ClassInstrumenter());
   }
-  
+
 }

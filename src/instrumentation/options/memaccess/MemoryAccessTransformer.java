@@ -21,23 +21,23 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 public class MemoryAccessTransformer implements ITransform { 
-  
+
   /** method of interest **/
   public static String MOI = "callret/instrumentation/examples/Sample$WTF.<init>()V";
-  
-  
+
+
   @SuppressWarnings("unchecked")
   public void transform(ClassNode cn) {
 
     for (MethodNode mn : (List<MethodNode>) cn.methods) {
-      
+
       // method location
       String location = cn.name + "." + mn.name + mn.desc;
       boolean inMOI = false;
       if (MOI.equals(location)) {
         inMOI = true;
       }
-      
+
       InsnList insns = mn.instructions;
       if (insns.size() == 0) { 
         continue;
@@ -47,7 +47,7 @@ public class MemoryAccessTransformer implements ITransform {
         AbstractInsnNode in = j.next();
         int op = in.getOpcode();
 
-        
+
         if ((op >= Opcodes.IASTORE && op <= Opcodes.SASTORE) ||
             (op >= Opcodes.IALOAD && op <= Opcodes.SALOAD)) {
           // array writes in MOI  
@@ -61,7 +61,7 @@ public class MemoryAccessTransformer implements ITransform {
           String owner = tmp.owner;
           // field name
           String fieldName = tmp.name;
-          
+
           boolean isStatic;
           boolean isStore;
           //TODO: this will not cover updates on field array
@@ -80,15 +80,15 @@ public class MemoryAccessTransformer implements ITransform {
           } else {
             throw new RuntimeException("UNEXPECTED");
           }
-          
+
           if (inMOI) {
             if (isStore) {
               InsnList list = fieldAccessInstr(isStatic, isStore, owner, fieldName, location);
               insns.insert(in.getPrevious(), list);
             }
           } else if (!isStore) {
-              InsnList list = fieldAccessInstr(isStatic, isStore, owner, fieldName, location);
-              insns.insert(in.getPrevious(), list);
+            InsnList list = fieldAccessInstr(isStatic, isStore, owner, fieldName, location);
+            insns.insert(in.getPrevious(), list);
           }
         }
       }
@@ -96,7 +96,7 @@ public class MemoryAccessTransformer implements ITransform {
       mn.maxStack += 10;
     } 
   }
- 
+
   static class FieldAccess {
     boolean isStatic;
     boolean isRead;
@@ -139,7 +139,7 @@ public class MemoryAccessTransformer implements ITransform {
       return result;
     }
   }
-  
+
   static class ArrayAccess {
     Object aref;
     int index;
@@ -169,34 +169,34 @@ public class MemoryAccessTransformer implements ITransform {
       return result;
     }
   }
-  
+
   /**
    * writes on regular fields
    */
   static Map<Object, List<FieldAccess>> instanceWrites = new HashMap<Object, List<FieldAccess>>();
   static Map<String, List<FieldAccess>> staticWrites = new HashMap<String, List<FieldAccess>>(); 
-  
+
   /**
    * reads on regular fields
    */
   static Map<Object, List<FieldAccess>> instanceReads = new HashMap<Object, List<FieldAccess>>();
   static Map<String, List<FieldAccess>> staticReads = new HashMap<String, List<FieldAccess>>();    
-  
+
   /**
    * writes and reads on array fields
    */
   static Map<Object, Set<Integer>> arrayWrites = new HashMap<Object, Set<Integer>>();
   static Set<ArrayAccess> arrayReads = new HashSet<ArrayAccess>();
-  
-  
+
+
   public static void dump() {
     System.out.printf("%d static field interactions!\n", staticReads.size());
     System.out.printf("%d instance field interactions!\n", instanceReads.size());
     System.out.printf("%d array interactions!\n", arrayReads.size());
   }
-  
+
   /*************** generation of instrumentation code ****************/
-  
+
   private InsnList fieldAccessInstr(boolean isStatic, boolean isStore, String className, String fieldName, String source) {
     InsnList il = new InsnList();    
     String adviceClassName = "callret/instrumentation/MemoryAccessTransformer";
@@ -230,7 +230,7 @@ public class MemoryAccessTransformer implements ITransform {
     il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, adviceClassName, adviceMethodName, signature));
     return il;
   }
-  
+
 
   private InsnList arrayAccessInstr(int op, String location) {
     InsnList il = new InsnList();    
@@ -272,7 +272,7 @@ public class MemoryAccessTransformer implements ITransform {
       adviceMethodName = "sastore";
       signature = "([SISLjava/lang/String;)V";      
       break;
-    /* loads */
+      /* loads */
     case Opcodes.IALOAD:
       adviceMethodName = "iaload";
       signature = "([IILjava/lang/String;)I";      
@@ -305,7 +305,7 @@ public class MemoryAccessTransformer implements ITransform {
       adviceMethodName = "saload";
       signature = "([SILjava/lang/String;)S";      
       break;      
-      
+
     default:
       throw new UnsupportedOperationException();
     }
@@ -313,9 +313,9 @@ public class MemoryAccessTransformer implements ITransform {
     il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, adviceClassName, adviceMethodName, signature));
     return il;
   }
-  
+
   /************************* listeners **********************/
-  
+
   public static void putfield(Object ref, String className, String fieldName, String source) {
     if (!source.equals(MOI)) {
       throw new RuntimeException("UNEXPECTED");
@@ -330,7 +330,7 @@ public class MemoryAccessTransformer implements ITransform {
       tmp.add(acc);  
     }
   }
-  
+
   public static void putstatic(String className, String fieldName, String source) {
     if (!source.equals(MOI)) {
       throw new RuntimeException("UNEXPECTED");
@@ -368,7 +368,7 @@ public class MemoryAccessTransformer implements ITransform {
       }
     }
   }
-  
+
   public static void getstatic(String className, String fieldName, String source) {
     if (source.equals(MOI)) {
       throw new RuntimeException("UNEXPECTED");
@@ -396,42 +396,42 @@ public class MemoryAccessTransformer implements ITransform {
     ar[index] = val;
     writeArrayIndex(ar, index, location);
   }
-  
+
   public static void lastore(long[] ar, int index, long val, String location) {
     ar[index] = val;
     writeArrayIndex(ar, index, location);
   }
-  
+
   public static void fastore(float[] ar, int index, float val, String location) {
     ar[index] = val;
     writeArrayIndex(ar, index, location);
   }
-  
+
   public static void dastore(double[] ar, int index, double val, String location) {
     ar[index] = val;
     writeArrayIndex(ar, index, location);
   }
-  
+
   public static void aastore(Object[] ar, int index, Object val, String location) {
     ar[index] = val;
     writeArrayIndex(ar, index, location);
   }
-  
+
   public static void bastore(byte[] ar, int index, byte val, String location) {
     ar[index] = val;
     writeArrayIndex(ar, index, location);
   }
-  
+
   public static void castore(char[] ar, int index, char val, String location) {
     ar[index] = val;
     writeArrayIndex(ar, index, location);
   }
-  
+
   public static void sastore(short[] ar, int index, short val, String location) {
     ar[index] = val;
     writeArrayIndex(ar, index, location);
   }
-  
+
   public static void writeArrayIndex(Object aref, int index, String location) {
     Set<Integer> set = arrayWrites.get(aref);
     if (set == null) {
@@ -444,47 +444,47 @@ public class MemoryAccessTransformer implements ITransform {
       set.remove(index); // killed
     }
   }
-  
+
   public static int iaload(int[] ar, int index, String location) {
     readArrayIndex(ar, index, location);
     return ar[index];
   }
-  
+
   public static long laload(long[] ar, int index, String location) {
     readArrayIndex(ar, index, location);
     return ar[index];    
   }
-  
+
   public static float faload(float[] ar, int index, String location) {
-    
+
     return ar[index];
   }
-  
+
   public static double daload(double[] ar, int index, String location) {
     readArrayIndex(ar, index, location);
     return ar[index];
   }
-  
+
   public static Object aaload(Object[] ar, int index, String location) {
     readArrayIndex(ar, index, location);
     return ar[index];
   }
-  
+
   public static byte baload(byte[] ar, int index, String location) {
     readArrayIndex(ar, index, location);
     return ar[index];
   }
-  
+
   public static char caload(char[] ar, int index, String location) {
     readArrayIndex(ar, index, location);
     return ar[index];
   }
-  
+
   public static short saload(short[] ar, int index, String location) {
     readArrayIndex(ar, index, location);
     return ar[index];
   }
-    
+
   private static void readArrayIndex(Object aref, int index, String location) {
     Set<Integer> indices = arrayWrites.get(aref);
     if (indices != null) {

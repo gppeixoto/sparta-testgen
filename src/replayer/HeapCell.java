@@ -5,15 +5,15 @@ import java.util.Map;
 
 public class HeapCell {
 
-	// non-native
-	private Map<String, Object> map = new HashMap<String, Object>();
+  // non-native
+  private Map<String, Object> map = new HashMap<String, Object>();
 
-	public Object load(String name) {
-		return map.get(name);
-	}
+  public Object load(String name) {
+    return map.get(name);
+  }
 
-	public void store(String name, Object val) {
-		assert val instanceof HeapCell || val.getClass().isPrimitive();
-		map.put(name, val);
-	}
+  public void store(String name, Object val) {
+    assert val instanceof HeapCell || val.getClass().isPrimitive();
+    map.put(name, val);
+  }
 }
