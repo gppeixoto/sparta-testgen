@@ -1,19 +1,23 @@
-package callret.agent;
+package instrumentation.agent;
+
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 
-import callret.instrumentation.ClassInstrumenter;
 
-/**
+/************************************************
  * This is the instrumentation agent class that 
  * must be passed in the command-line using
  * the command below.
  * 
  * -javaagent:jarpath[=options]
- */
-public class InstrumentationAgent
-{
+ ***********************************************/
+
+public class InstrumentationAgent {
+	
+  /**
+   * Prints modified bytecodes on the screen, if enabled	
+   */
   public static boolean DEBUG = false;
 
   /**
@@ -25,4 +29,5 @@ public class InstrumentationAgent
     // infrastructure
     inst.addTransformer(new ClassInstrumenter());
   }
+  
 }

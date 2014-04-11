@@ -4,6 +4,6 @@ CURRDIR=`pwd`
 
 (cd ${CURRDIR}/bin
     find . -name "*.class" | \
-        grep "callret" | \
+        grep "instrumentation" | \
         xargs jar cvfm ${CURRDIR}/iagent.jar ${CURRDIR}/manifest.mf 
 )

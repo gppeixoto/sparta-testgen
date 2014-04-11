@@ -9,4 +9,4 @@ done
 
 java -cp $CP \
     -javaagent:iagent.jar \
-    callret.instrumentation.examples.Sample
+    instrumentation.examples.Sample

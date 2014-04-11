@@ -1,6 +1,4 @@
-package callret.instrumentation.examples;
-
-import callret.instrumentation.MemoryAccessTransformer;
+package instrumentation.examples;
 
 
 public class Sample {
@@ -21,8 +19,6 @@ public class Sample {
 		String s = wtf.ar[1];
 		K++; // used
 		s = wtf.ar[0];
-
-		MemoryAccessTransformer.dump();
 	}
 
 }

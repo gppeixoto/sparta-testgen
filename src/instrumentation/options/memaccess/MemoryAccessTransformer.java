@@ -1,4 +1,6 @@
-package callret.instrumentation;
+package instrumentation.options.memaccess;
+
+import instrumentation.options.ITransform;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +20,7 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
-public class MemoryAccessTransformer {
+public class MemoryAccessTransformer implements ITransform { 
   
   /** method of interest **/
   public static String MOI = "callret/instrumentation/examples/Sample$WTF.<init>()V";
