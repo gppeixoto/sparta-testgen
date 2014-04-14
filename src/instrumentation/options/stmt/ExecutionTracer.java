@@ -2,6 +2,7 @@ package instrumentation.options.stmt;
 
 import instrumentation.options.ITransform;
 
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -117,15 +118,30 @@ public class ExecutionTracer implements ITransform {
     il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "instrumentation/options/stmt/ExecutionTracer", "log", "(Ljava/lang/String;)V"));
   }
   
-  static List<String> log = new ArrayList<String>();  
+  private static List<String> log = new ArrayList<String>();  
   
   public static void log(String msg) {
     log.add(msg);
   }
 
-  public static void dump() {
-    for (String msg : log) System.out.println(msg);
+  public static void dump() throws Exception {
+    
+   System.out.println(log);
+   
+   
+//TODO: Need to check why this code raises ClassNotFoundException -Marcelo
+   
+//    StringBuffer buffer = new StringBuffer();
+//    for (String str : log) {
+//      buffer.append(str);
+//      buffer.append("\n");
+//    }
+//    String tmpDir = System.getProperty("java.io.tmpdir");
+//    String fileName = tmpDir + System.getProperty("file.separator") + "trace.out";
+//    FileWriter fw = new FileWriter(fileName);
+//    fw.write(buffer.toString());
+//    fw.flush();
+//    fw.close();
   }
-
 
 }

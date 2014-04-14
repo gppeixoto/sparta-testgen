@@ -18,7 +18,9 @@ public class CallStack {
     OperandStack tmp = null;
     try {
       tmp = stack.peek();
-    } catch (EmptyStackException _)  { }
+    } catch (EmptyStackException _)  { 
+      throw new FinishedExecutionException();
+    }
     return tmp;
   }
 

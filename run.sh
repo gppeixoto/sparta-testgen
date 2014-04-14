@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./compile.sh
+##./compile.sh
 ./genAgent.sh
 
 CP="bin"
@@ -9,7 +9,14 @@ do
     CP="$CP:$x"
 done
 
+## Revisit this. -Marcelo
+## This should be done all in one step but I got stuck in a classpath problem
+
+PGM="instrumentation.examples.Foo"
+
 java -cp $CP \
     -javaagent:iagent.jar \
     instrumentation.Wrapper \
-    instrumentation.examples.Foo
+    ${PGM} | awk '{$1=""; print $0}' > trace.out
+
+java -cp $CP replayer.Main
