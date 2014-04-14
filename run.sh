@@ -10,5 +10,6 @@ do
 done
 
 java -cp $CP \
+    -javaagent:iagent.jar \
     instrumentation.Wrapper \
     instrumentation.examples.Foo
