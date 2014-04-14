@@ -1,5 +1,7 @@
 #!/bin/bash
 
+./compile.sh
+./genAgent.sh
 
 CP="bin"
 for x in `ls libs/*.jar`
@@ -8,6 +10,5 @@ do
 done
 
 java -cp $CP \
-    -javaagent:iagent.jar \
     instrumentation.Wrapper \
     instrumentation.examples.Foo
