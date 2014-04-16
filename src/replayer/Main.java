@@ -62,7 +62,7 @@ public class Main {
   enum OPCODE {BIPUSH, ISTORE, ILOAD, ICONST, imul, 
     RETURN, newarray, dup, iastore, iaload, astore, aload, 
     ldc, getstatic, NEW, invokespecial, putfield, INVOKESTATIC, 
-    LINENUMBER, IADD, IRETURN, POP};
+          LINENUMBER, IADD, IRETURN, POP, ISUB};
 
   public void replay() {
     for(int i = 0; i < instructionTrace.size(); i++) {
@@ -239,6 +239,13 @@ public class Main {
         int val2 = (Integer) operandStack.pop();
         operandStack.push(val1 + val2);
         break;
+
+      case ISUB: 
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        operandStack.push(val1 - val2);
+        break;
+
         
       case IRETURN:
         val1 = (Integer) operandStack.pop();
