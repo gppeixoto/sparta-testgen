@@ -8,7 +8,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
 
@@ -63,9 +65,12 @@ public class Main {
     RETURN, newarray, dup, iastore, iaload, astore, aload, 
     ldc, getstatic, NEW, invokespecial, putfield, INVOKESTATIC, 
           LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
-          INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF};
+          INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, FRAME};
 
   public void replay() {
+    
+    Map<String, Integer> labels = new HashMap<String, Integer>();
+    
     for(int i = 0; i < instructionTrace.size(); i++) {
       String insn = instructionTrace.get(i);
 
@@ -73,6 +78,8 @@ public class Main {
       // TODO: optimize this if inefficient
       String[] splits = insn.split("\\s++|_");
       OPCODE kind = null;
+      
+      //TODO: optimize this
       for (OPCODE k : OPCODE.values()) {
         if (splits[0].startsWith(k.toString())) {
           kind = k;
@@ -81,6 +88,7 @@ public class Main {
       }
       if (kind == null) {
         if (splits[0].trim().matches("L\\d*")) {
+          labels.put(splits[0], i);
           continue; // skip
         }
         throw new RuntimeException("Could not find instruction: >" + splits[0] + "<");
@@ -233,6 +241,7 @@ public class Main {
         break;
         
       case LINENUMBER:
+        labels.put(complementTwo, i);
         break;
         
       case IADD: 
@@ -325,27 +334,70 @@ public class Main {
       case IF:
         val1 = (Integer) operandStack.pop();
         val2 = (Integer) operandStack.pop();
-        //TODO: generalize this for other operations
+
         String op = complementOne;
-        if (!op.equals("ICMPGT")) {
-          throw new UnsupportedOperationException();
+        boolean shouldJump;
+        if (op.equals("ICMPGT")) {
+          shouldJump = val2 > val1; 
+        } else if (op.equals("ICMPLT")) {
+          shouldJump = val2 < val1;
+        } else if (op.equals("ICMPGE")) {
+          shouldJump = val2 >= val1;
+        } else if (op.equals("ICMPNE")) {
+          shouldJump = val2 != val1;
+        } else if (op.equals("ICMPLE")) {
+          shouldJump = val2 <= val1;
+        } else {
+          throw new UnsupportedOperationException("IF >" + op + "<");
         }
-        boolean shouldJump = val2 > val1;
-        if (shouldJump) {
-          String jumpLabel = complementTwo;
-          //TODO: you need to set variable i (which denotes the program counter). 
-          // Two cases: 
-          //   (1) jumpLabel has been visited already.  See code "if (kind == null) { if (splits[0].trim().matches("L\\d*")) {".  
-          //   (2) jumpLabel has not been visited.  You will need to iterate on the instruction list until finding it.
+        
+        if (shouldJump) { // reset program counter
+          i = lookupForLabel(labels, complementTwo, i);
         }
         break;
         
+      case GOTO:
+        i = lookupForLabel(labels, complementOne, i);
+       break;
+        
+      case FRAME:
+        // ignore ASM-generated instruction
+        break;
+       
       default:
         throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
       }
 
     }
 
+  }
+
+  private int lookupForLabel(Map<String, Integer> labels, String jumpLabel, int k) {
+    Integer res = labels.get(jumpLabel);
+    if (res != null) {
+      return res;
+    }      
+    for (; k < instructionTrace.size(); k++) {
+      String tmp = instructionTrace.get(k).trim();
+      if (tmp.matches("L\\d*")) {
+        labels.put(tmp, k);
+        if (tmp.equals(jumpLabel)) {
+          res = k;
+          break;  
+        }
+      } else if (tmp.startsWith("LINENUMBER")) {
+        String lab = tmp.substring(tmp.lastIndexOf(" ")).trim();
+        labels.put(lab, k);
+        if (lab.equals(jumpLabel)) {
+          res = k;
+          break;
+        }
+      }
+    }
+    if (res == null) {
+      throw new RuntimeException("error");
+    }
+    return res;
   }
 
 
