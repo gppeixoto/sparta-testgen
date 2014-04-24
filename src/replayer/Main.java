@@ -55,17 +55,18 @@ public class Main {
     try {
       (new Main(buffer)).replay();
     } catch (FinishedExecutionException _) {
-      System.out.println("done replayed execution");
+      System.out.println("execution replayed");
     }
     
   }
 
   //TODO: please revise all instructions in lowercase -Marcelo
   enum OPCODE {BIPUSH, ISTORE, ILOAD, ICONST, imul, 
-    RETURN, newarray, dup, iastore, iaload, astore, aload, 
-    ldc, getstatic, NEW, invokespecial, putfield, INVOKESTATIC, 
+    RETURN, newarray, DUP, iastore, iaload, ASTORE, ALOAD, 
+    ldc, getstatic, NEW, INVOKESPECIAL, PUTFIELD, INVOKESTATIC, 
           LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
-          INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, FRAME};
+          INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, 
+          FRAME};
 
   public void replay() {
     
@@ -130,11 +131,11 @@ public class Main {
       case BIPUSH:
         operandStack.push(Integer.parseInt(complementOne));
         break;
-      case astore:
+      case ASTORE:
       case ISTORE:
         operandStack.store(Integer.parseInt(complementOne));
         break;
-      case aload:
+      case ALOAD:
       case ILOAD:
         operandStack.load(Integer.parseInt(complementOne));
         break;
@@ -153,7 +154,7 @@ public class Main {
         // ignoring type for now
         operandStack.push(heap.newCell());
         break;
-      case dup:
+      case DUP:
         operandStack.push(operandStack.peek());
         break;
       case iastore:
@@ -188,29 +189,30 @@ public class Main {
         }
         break;
       case NEW: 
-        if (!complementTwo.equals("//class")) {
-          throw new UnsupportedOperationException("expecting class literal");
-        }
         operandStack.push(heap.newCell());
         break;
       case INVOKESTATIC:
         isStatic = true;
-      case invokespecial: 
+      case INVOKESPECIAL: 
         int idx = complementOne.lastIndexOf('.');
         String cName = complementOne.substring(0, idx);
         String mName = complementOne.substring(idx+1);
         String[] args = new String[]{cName, mName, complementTwo};
         AccessibleObject aobj = Util.lookup(args);
         
-        int numParams; int mod;
+        int numParams; 
+        boolean skip = false;
         if (aobj instanceof Method) {
           Method meth = (Method) aobj;
           numParams = meth.getParameterTypes().length;
-          mod = meth.getModifiers();
+          skip = Modifier.isNative(meth.getModifiers());
         } else {
           Constructor<?> cons = (Constructor<?>) aobj;
           numParams = cons.getParameterTypes().length;
-          mod = cons.getModifiers();
+          skip = Modifier.isNative(cons.getModifiers());
+          if (!skip && cons.getDeclaringClass()==Object.class && mName.equals("<init>")) {
+            skip = true;
+          }
         }
         
         List<Object> list = new ArrayList<Object>();
@@ -221,7 +223,7 @@ public class Main {
         if (!isStatic) {
           list.add(operandStack.pop());
         }
-        if (Modifier.isNative(mod)) {
+        if (skip) {
           // ASSUMING NO RELEVANT MUTATION
         } else {
           operandStack = callStack.push(cName + mName);
@@ -230,13 +232,10 @@ public class Main {
           }
         }
         break;
-      case putfield: 
-        if (!complementTwo.equals("//Field")) {
-          throw new UnsupportedOperationException("expecting class literal");
-        }
+      case PUTFIELD: 
         val = operandStack.pop();
         HeapCell objRef = (HeapCell) operandStack.pop();
-        String fieldName = complementThree.substring(complementThree.charAt('.')+1, complementThree.charAt(':'));
+        String fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
         objRef.store(fieldName, val);
         break;
         

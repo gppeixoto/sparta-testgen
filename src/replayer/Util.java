@@ -53,7 +53,7 @@ public class Util {
       list.toArray(ar);
 
       AccessibleObject aobj;
-      if (args[1].equals("\"<init>\"")) {
+      if (args[1].equals("<init>")) {
         aobj = clazz.getDeclaredConstructor(ar);
       } else {
         aobj = clazz.getDeclaredMethod(args[1], ar);

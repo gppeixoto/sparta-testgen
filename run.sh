@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ## example program
-PGM="instrumentation.examples.Foo"
+#PGM="instrumentation.examples.ControlFlow"
+PGM="instrumentation.examples.ObjectAllocation"
 
 ## compile all the code outside Eclipse
 ./compile.sh
