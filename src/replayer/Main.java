@@ -62,7 +62,8 @@ public class Main {
   enum OPCODE {BIPUSH, ISTORE, ILOAD, ICONST, imul, 
     RETURN, newarray, dup, iastore, iaload, astore, aload, 
     ldc, getstatic, NEW, invokespecial, putfield, INVOKESTATIC, 
-          LINENUMBER, IADD, IRETURN, POP, ISUB};
+          LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
+          INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP};
 
   public void replay() {
     for(int i = 0; i < instructionTrace.size(); i++) {
@@ -245,7 +246,65 @@ public class Main {
         val2 = (Integer) operandStack.pop();
         operandStack.push(val1 - val2);
         break;
-
+        
+      case IMUL:
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        operandStack.push(val1 * val2);
+        break;
+        
+      case IDIV:
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        operandStack.push(val1 / val2);
+        break;
+        
+      case IREM:
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        operandStack.push(val1 % val2);
+        break;
+        
+      case ISHL:
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        operandStack.push(val1 << val2);
+        break;
+        
+      case ISHR: 
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        operandStack.push(val1 >> val2);
+        break;
+        
+      case IUSHR:
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        operandStack.push(val1 >>> val2);
+        break;
+        
+      case IAND:
+        Boolean bol1 = (Boolean) operandStack.pop();
+        Boolean bol2 = (Boolean) operandStack.pop();
+        operandStack.push(bol1 & bol2);
+        break;
+        
+      case IOR:
+        bol1 = (Boolean) operandStack.pop();
+        bol2 = (Boolean) operandStack.pop();
+        operandStack.push(bol1 | bol2);
+        break;
+        
+      case IXOR: 
+        bol1 = (Boolean) operandStack.pop();
+        bol2 = (Boolean) operandStack.pop();
+        operandStack.push(bol1 ^ bol2);
+        break;
+      
+      case LCMP:
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        operandStack.push( val1 == val2 ? 0 : (val1 < val2 ? -1 : 1));
         
       case IRETURN:
         val1 = (Integer) operandStack.pop();
@@ -253,6 +312,11 @@ public class Main {
         operandStack.push(val1);
         break;
         
+      case INEG:
+        val1 = (Integer) operandStack.pop();
+        operandStack = callStack.pop();
+        operandStack.push(-val1);
+        break;
         
       case POP:
         operandStack.pop();
