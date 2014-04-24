@@ -63,7 +63,7 @@ public class Main {
     RETURN, newarray, dup, iastore, iaload, astore, aload, 
     ldc, getstatic, NEW, invokespecial, putfield, INVOKESTATIC, 
           LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
-          INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP};
+          INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF};
 
   public void replay() {
     for(int i = 0; i < instructionTrace.size(); i++) {
@@ -320,6 +320,24 @@ public class Main {
         
       case POP:
         operandStack.pop();
+        break;
+        
+      case IF:
+        val1 = (Integer) operandStack.pop();
+        val2 = (Integer) operandStack.pop();
+        //TODO: generalize this for other operations
+        String op = complementOne;
+        if (!op.equals("ICMPGT")) {
+          throw new UnsupportedOperationException();
+        }
+        boolean shouldJump = val2 > val1;
+        if (shouldJump) {
+          String jumpLabel = complementTwo;
+          //TODO: you need to set variable i (which denotes the program counter). 
+          // Two cases: 
+          //   (1) jumpLabel has been visited already.  See code "if (kind == null) { if (splits[0].trim().matches("L\\d*")) {".  
+          //   (2) jumpLabel has not been visited.  You will need to iterate on the instruction list until finding it.
+        }
         break;
         
       default:
