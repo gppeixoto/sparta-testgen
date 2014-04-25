@@ -1,15 +1,15 @@
 package instrumentation.examples;
 
-public class ObjectAllocation {
-  
+public class RefArrayAllocation {
+
   static class NonSense {
-    int f;
-    NonSense() { }
+    String[] ar = new String[]{};
   }
   
   public static void main(String[] args) {
+    
     NonSense ns = new NonSense();
-    ns.f = 5;
+    
   }
 
 }

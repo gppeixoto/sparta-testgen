@@ -3,33 +3,33 @@ package instrumentation.examples;
 public class ControlFlow {
 
   static void foo(int a, int b, int c) {
-    int maior, medio, menor;
-    medio = 0;
+    int bigger, mid, smaller;
+    mid = 0;
     
     if (a <= b){
-      maior = b;
-      menor = a;
+      bigger = b;
+      smaller = a;
     } else {
-      maior = a;
-      menor = b;
+      bigger = a;
+      smaller = b;
     } 
     
-    if (c >= maior){
-      medio = maior;
-      maior = c;
-    } else if (c < menor){
-      medio = menor;
-      menor = c;
+    if (c >= bigger){
+      mid = bigger;
+      bigger = c;
+    } else if (c < smaller){
+      mid = smaller;
+      smaller = c;
     }
     
-    if (maior == menor){
-      maior = maior + 1;
+    if (bigger == smaller){
+      bigger = bigger + 1;
     } else {
-      menor = medio - 1;
+      smaller = mid - 1;
     }
     
-    if (medio > menor){
-      medio = medio + 1;
+    if (mid > smaller){
+      mid = mid + 1;
     }
      
   }

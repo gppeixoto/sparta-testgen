@@ -60,13 +60,12 @@ public class Main {
     
   }
 
-  //TODO: please revise all instructions in lowercase -Marcelo
-  enum OPCODE {BIPUSH, ISTORE, ILOAD, ICONST, imul, 
-    RETURN, newarray, DUP, iastore, iaload, ASTORE, ALOAD, 
-    ldc, getstatic, NEW, INVOKESPECIAL, PUTFIELD, INVOKESTATIC, 
-          LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
-          INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, 
-          FRAME};
+  enum OPCODE {BIPUSH, ISTORE, ILOAD, ICONST, 
+    RETURN, NEWARRAY, DUP, IASTORE, IALOAD, ASTORE, ALOAD, 
+    LDC, GETSTATIC, NEW, INVOKESPECIAL, PUTFIELD, INVOKESTATIC, 
+    LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
+    INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, 
+    FRAME, ANEWARRAY, AASTORE, PUTSTATIC, GETFIELD, AALOAD};
 
   public void replay() {
     
@@ -81,9 +80,9 @@ public class Main {
       OPCODE kind = null;
       
       //TODO: optimize this
-      for (OPCODE k : OPCODE.values()) {
-        if (splits[0].startsWith(k.toString())) {
-          kind = k;
+      for (OPCODE opcode : OPCODE.values()) {
+        if (opcode.toString().equals(splits[0])) {
+          kind = opcode;
           break;
         }
       }
@@ -124,75 +123,98 @@ public class Main {
         }
       }
       // done with parsing
-
+      
       boolean isStatic = false;
       // replay instruction
       switch (kind) {
+      
       case BIPUSH:
         operandStack.push(Integer.parseInt(complementOne));
         break;
+      
       case ASTORE:
       case ISTORE:
         operandStack.store(Integer.parseInt(complementOne));
         break;
+      
       case ALOAD:
       case ILOAD:
         operandStack.load(Integer.parseInt(complementOne));
         break;
+      
       case ICONST:
         operandStack.push(Integer.parseInt(complementOne));
         break;
-      case imul:
-        int tmp1 = (Integer) operandStack.pop();
-        int tmp2 = (Integer) operandStack.pop();
-        operandStack.push(tmp1 * tmp2);
-        break;
+      
       case RETURN:
         operandStack = callStack.pop();
         break;
-      case newarray: 
+      
+      case ANEWARRAY:
+      case NEWARRAY:
+        //TODO: ignoring count.  this will be important to reproduce out-of-bounds exceptions
+        operandStack.pop();
         // ignoring type for now
         operandStack.push(heap.newCell());
         break;
+      
       case DUP:
         operandStack.push(operandStack.peek());
         break;
-      case iastore:
+      
+      case AASTORE:
+      case IASTORE:
         Object val = operandStack.pop();
         int index = (Integer) operandStack.pop();
         HeapCell arRef = (HeapCell) operandStack.pop();
         arRef.store(index+"", val);
         break;
-      case iaload:
+        
+      case AALOAD:
+      case IALOAD:
         index = (Integer) operandStack.pop();
         arRef = (HeapCell) operandStack.pop();
         operandStack.push(arRef.load(index+""));
         break;
-      case ldc:
-        if (!complementTwo.equals("//String")) {
-          throw new UnsupportedOperationException("expecting string literal");
-        }
-        operandStack.push(complementThree);
+      
+      case LDC:
+        operandStack.push(complementOne);
         break;
-      case getstatic:
-        if (!complementTwo.equals("//Field")) {
-          throw new UnsupportedOperationException("MISSING");
-        }
+      
+      case GETSTATIC:
         try {
-          String[] tmp = complementThree.split(":");
-          String className = tmp[0];
-          tmp = className.split("\\.");
-          Field f = Class.forName(tmp[0].replace('/', '.')).getField(tmp[1]);
+          int idx = complementOne.lastIndexOf(".");
+          String clazz = complementOne.substring(0, idx).replace('/', '.');
+          String field = complementOne.substring(idx+1);
+          Field f = Class.forName(clazz).getDeclaredField(field);
+          f.setAccessible(true);
           operandStack.push(f.get(null));
         } catch (Exception e) {
           throw new RuntimeException("check this!");
         }
         break;
+      
+      case PUTSTATIC:
+        try {
+          int idx = complementOne.lastIndexOf(".");
+          String clazz = complementOne.substring(0, idx).replace('/', '.');
+          String field = complementOne.substring(idx+1);
+          Field f = Class.forName(clazz).getDeclaredField(field);
+          f.setAccessible(true);
+          f.set(null, operandStack.pop());
+        } catch (Exception e) {
+          e.printStackTrace();
+          throw new RuntimeException("check this!");
+        }
+        break;
+      
       case NEW: 
         operandStack.push(heap.newCell());
         break;
+      
       case INVOKESTATIC:
         isStatic = true;
+      
       case INVOKESPECIAL: 
         int idx = complementOne.lastIndexOf('.');
         String cName = complementOne.substring(0, idx);
@@ -232,11 +254,18 @@ public class Main {
           }
         }
         break;
+        
       case PUTFIELD: 
         val = operandStack.pop();
         HeapCell objRef = (HeapCell) operandStack.pop();
         String fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
         objRef.store(fieldName, val);
+        break;
+        
+      case GETFIELD: 
+        objRef = (HeapCell) operandStack.pop();
+        fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
+        operandStack.push(objRef.load(fieldName));
         break;
         
       case LINENUMBER:

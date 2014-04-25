@@ -2,7 +2,10 @@
 
 ## example program
 #PGM="instrumentation.examples.ControlFlow"
-PGM="instrumentation.examples.ObjectAllocation"
+#PGM="instrumentation.examples.ObjectAllocation"
+#PGM="instrumentation.examples.IntArrays"
+#PGM="instrumentation.examples.RefArrayAllocation"
+PGM="instrumentation.examples.RefArrays"
 
 ## compile all the code outside Eclipse
 ./compile.sh

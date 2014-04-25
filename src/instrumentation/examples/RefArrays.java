@@ -1,7 +1,7 @@
 package instrumentation.examples;
 
 
-public class Sample {
+public class RefArrays {
 
   static int K;
 
