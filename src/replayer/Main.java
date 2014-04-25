@@ -65,7 +65,9 @@ public class Main {
     LDC, GETSTATIC, NEW, INVOKESPECIAL, PUTFIELD, INVOKESTATIC, 
     LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
     INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, 
-    FRAME, ANEWARRAY, AASTORE, PUTSTATIC, GETFIELD, AALOAD};
+    FRAME, ANEWARRAY, AASTORE, PUTSTATIC, GETFIELD, AALOAD, SIPUSH,
+    DSTORE, DLOAD, DMUL, DADD, DDIV, DSUB
+    };
 
   public void replay() {
     
@@ -132,11 +134,13 @@ public class Main {
         operandStack.push(Integer.parseInt(complementOne));
         break;
       
+      case DSTORE:
       case ASTORE:
       case ISTORE:
         operandStack.store(Integer.parseInt(complementOne));
         break;
       
+      case DLOAD:
       case ALOAD:
       case ILOAD:
         operandStack.load(Integer.parseInt(complementOne));
@@ -178,7 +182,18 @@ public class Main {
         break;
       
       case LDC:
-        operandStack.push(complementOne);
+
+        try {
+          int k = Integer.parseInt(complementOne);
+          operandStack.push(k);
+        } catch(NumberFormatException _) {
+          try {
+            double k = Double.parseDouble(complementOne);
+            operandStack.push(k);
+          } catch(NumberFormatException __) {
+            operandStack.push(complementOne);
+          } 
+        }
         break;
       
       case GETSTATIC:
@@ -272,72 +287,93 @@ public class Main {
         labels.put(complementTwo, i);
         break;
         
-      case IADD: 
-        int val1 = (Integer) operandStack.pop();
-        int val2 = (Integer) operandStack.pop();
-        operandStack.push(val1 + val2);
+      case DADD:
+      case DSUB: 
+      case DMUL:
+      case DDIV:
+        
+        double d1 = (Double) operandStack.pop();
+        double d2 = (Double) operandStack.pop();
+        
+        double res;
+        switch(kind) {
+        case DADD:
+          res = d1 + d2;
+          break;
+        case DSUB: 
+          res = d1 - d2;
+          break;
+        case DMUL:
+          res = d1 * d2;
+          break;
+        case DDIV:
+          res = d1 / d2;
+          break;
+        default:
+          throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
+        }
+        
+        operandStack.push(res);
         break;
 
+        
+      case IADD:
       case ISUB: 
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
-        operandStack.push(val1 - val2);
-        break;
-        
       case IMUL:
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
-        operandStack.push(val1 * val2);
-        break;
-        
       case IDIV:
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
-        operandStack.push(val1 / val2);
-        break;
-        
       case IREM:
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
-        operandStack.push(val1 % val2);
-        break;
-        
       case ISHL:
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
-        operandStack.push(val1 << val2);
-        break;
-        
-      case ISHR: 
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
-        operandStack.push(val1 >> val2);
-        break;
-        
+      case ISHR:
       case IUSHR:
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
-        operandStack.push(val1 >>> val2);
-        break;
-        
       case IAND:
-        Boolean bol1 = (Boolean) operandStack.pop();
-        Boolean bol2 = (Boolean) operandStack.pop();
-        operandStack.push(bol1 & bol2);
-        break;
-        
       case IOR:
-        bol1 = (Boolean) operandStack.pop();
-        bol2 = (Boolean) operandStack.pop();
-        operandStack.push(bol1 | bol2);
+      case IXOR:
+        
+        int val1 = (Integer) operandStack.pop();
+        int val2 = (Integer) operandStack.pop();
+        
+        int tmp;
+        switch(kind) {
+        case IADD:
+          tmp = val1 + val2;
+          break;
+        case ISUB: 
+          tmp = val1 - val2;
+          break;
+        case IMUL:
+          tmp = val1 * val2;
+          break;
+        case IDIV:
+          tmp = val1 / val2;
+          break;
+        case IREM:
+          tmp = val1 % val2;
+          break;
+        case ISHL:
+          tmp = val1 << val2;
+          break;
+        case ISHR:
+          tmp = val1 >> val2;
+          break;
+        case IUSHR:
+          tmp = val1 >>> val2;
+        break;
+        case IAND: 
+          tmp = val1 & val2;
+          break;
+        case IOR:
+          tmp = val1 | val2;
+          break;
+        case IXOR:
+          tmp = val1 ^ val2;
+          break;
+        default:
+          throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
+        }
+        
+        operandStack.push(tmp);
         break;
         
-      case IXOR: 
-        bol1 = (Boolean) operandStack.pop();
-        bol2 = (Boolean) operandStack.pop();
-        operandStack.push(bol1 ^ bol2);
-        break;
-      
       case LCMP:
         val1 = (Integer) operandStack.pop();
         val2 = (Integer) operandStack.pop();
@@ -390,6 +426,11 @@ public class Main {
         
       case FRAME:
         // ignore ASM-generated instruction
+        break;
+        
+      case SIPUSH:
+        // representing as integer (ignoring overflows)
+        operandStack.push(Integer.parseInt(complementOne));
         break;
        
       default:

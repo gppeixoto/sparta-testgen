@@ -5,7 +5,8 @@
 #PGM="instrumentation.examples.ObjectAllocation"
 #PGM="instrumentation.examples.IntArrays"
 #PGM="instrumentation.examples.RefArrayAllocation"
-PGM="instrumentation.examples.RefArrays"
+#PGM="instrumentation.examples.RefArrays"
+PGM="instrumentation.examples.Arith"
 
 ## compile all the code outside Eclipse
 ./compile.sh
