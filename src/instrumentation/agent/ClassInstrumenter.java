@@ -37,6 +37,7 @@ public class ClassInstrumenter implements ClassFileTransformer {
    *    he wants.  We chose ASM. 
    * 
    *********************************************************/
+  @SuppressWarnings("unused")
   @Override
   public byte[] transform(ClassLoader loader, String className,
       Class<?> classBeingRedefined, ProtectionDomain protectionDomain,

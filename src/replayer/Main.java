@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +148,13 @@ public class Main {
         break;
       
       case ICONST:
-        operandStack.push(Integer.parseInt(complementOne));
+        boolean neg = false;
+        if (complementOne.charAt(0)=='M') {
+          complementOne = complementOne.substring(1);
+          neg = true;
+        }
+        int tmp = Integer.parseInt(complementOne);
+        operandStack.push(neg?-tmp:tmp);
         break;
       
       case RETURN:
@@ -332,7 +339,6 @@ public class Main {
         int val1 = (Integer) operandStack.pop();
         int val2 = (Integer) operandStack.pop();
         
-        int tmp;
         switch(kind) {
         case IADD:
           tmp = val1 + val2;
@@ -432,6 +438,27 @@ public class Main {
         // representing as integer (ignoring overflows)
         operandStack.push(Integer.parseInt(complementOne));
         break;
+        
+      case LOOKUPSWITCH:
+        
+        val1 = (Integer) operandStack.pop();
+        String[] parts = insn.substring(OPCODE.LOOKUPSWITCH.name().length()+1).trim().split("  ");
+        String gotoLabel = null;
+        for (String part : parts) {
+          if (!part.trim().equals("")) {
+            String[] keyval = part.split(":");
+            String key = keyval[0].trim();
+            if (key.equals("default") || val1 == Integer.parseInt(key)) {
+              gotoLabel = keyval[1].trim();
+              break;
+            }
+          }
+        }
+        if (gotoLabel == null) {
+          throw new RuntimeException("should not happen!");
+        }
+        i = lookupForLabel(labels, gotoLabel, i);
+        break;
        
       default:
         throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
@@ -464,7 +491,7 @@ public class Main {
       }
     }
     if (res == null) {
-      throw new RuntimeException("error");
+      throw new RuntimeException("ERROR: Could not find requested label!");
     }
     return res;
   }

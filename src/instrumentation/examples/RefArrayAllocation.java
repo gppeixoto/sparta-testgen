@@ -8,6 +8,7 @@ public class RefArrayAllocation {
   
   public static void main(String[] args) {
     
+    @SuppressWarnings("unused")
     NonSense ns = new NonSense();
     
   }

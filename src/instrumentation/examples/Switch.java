@@ -3,7 +3,7 @@ package instrumentation.examples;
 public class Switch {
   
   public static void main(String[] args) {
-    int k = 99;
+    int k = 10;
     switch (k) {
     case 1:
       k = 55;

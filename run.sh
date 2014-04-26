@@ -1,20 +1,11 @@
 #!/bin/bash
 
-## example program
-#PGM="instrumentation.examples.Arith"
-#PGM="instrumentation.examples.ControlFlow"
-#PGM="instrumentation.examples.ObjectAllocation"
-#PGM="instrumentation.examples.IntArrays"
-#PGM="instrumentation.examples.RefArrayAllocation"
-#PGM="instrumentation.examples.RefArrays"
-PGM="instrumentation.examples.Switch"
+if [ $# -eq 0 ]; then
+    echo "No arguments supplied"
+    exit
+fi
 
-
-## compile all the code outside Eclipse
-./compile.sh
-
-## generate instrumentation agent iagent.jar
-./genAgent.sh
+PGM=$1 ## provide main function to run
 
 ## adds all necessary jar file in CP variable
 CP="bin"
