@@ -18,9 +18,6 @@ public class Util {
         case 'I':
           tp = Integer.TYPE;
           break;
-        case 'L':
-          tp = Long.TYPE;
-          break;
         case 'S':
           tp = Short.TYPE;
           break;
@@ -39,11 +36,25 @@ public class Util {
         case 'Z':
           tp = Boolean.TYPE;
           break;
+        case 'J':
+          tp = Long.TYPE;
+          break;
+        case 'V':
+          tp = Void.TYPE;
+          break;
+        case 'L':
+          int idx = params.indexOf(";");
+          String tmp = params.substring(1, idx);
+          tp = Class.forName(tmp.replace("/", "."));
+          params = params.substring(idx+1);
+          break;
         default:
-          throw new RuntimeException("missing implementation");
+          throw new RuntimeException("missing implementation --->" + c);
         }
-        if (params.length() > 1) {
-          params = params.substring(1);
+        if (params.length() > 0) {
+          if (c != 'L') {
+            params = params.substring(1);
+          }
         } else {
           params = "";
         }
