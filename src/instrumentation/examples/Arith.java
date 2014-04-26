@@ -3,8 +3,8 @@ package instrumentation.examples;
 public class Arith {
   
   public static void main(String[] args) {
-//    int x = 10;
-//    x = x * 100 + 23 - 29 / 4 ^ 4 % 2 & 43 | 1000;
+    int x = 10;
+    x = x * 100 + 23 - 29 / 4 ^ 4 % 2 & 43 | 1000;
     
     
     double y = 10;

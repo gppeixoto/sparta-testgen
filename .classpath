@@ -5,7 +5,8 @@
 	<classpathentry kind="lib" path="libs/asm-4.0.jar"/>
 	<classpathentry kind="lib" path="libs/asm-analysis-4.0.jar"/>
 	<classpathentry kind="lib" path="libs/asm-commons-4.0.jar"/>
-	<classpathentry kind="lib" path="libs/asm-tree-4.0.jar"/>
-	<classpathentry kind="lib" path="libs/asm-util-4.0.jar"/>
+	<classpathentry kind="lib" path="libs/asm-tree-4.0.jar" sourcepath="libs/asm-4.0-src.zip"/>
+	<classpathentry kind="lib" path="libs/asm-util-4.0.jar" sourcepath="libs/asm-4.0-src.zip"/>
+	<classpathentry kind="lib" path="libs/asm-4.0-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

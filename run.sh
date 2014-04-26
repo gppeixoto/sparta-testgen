@@ -1,12 +1,14 @@
 #!/bin/bash
 
 ## example program
+#PGM="instrumentation.examples.Arith"
 #PGM="instrumentation.examples.ControlFlow"
 #PGM="instrumentation.examples.ObjectAllocation"
 #PGM="instrumentation.examples.IntArrays"
 #PGM="instrumentation.examples.RefArrayAllocation"
 #PGM="instrumentation.examples.RefArrays"
-PGM="instrumentation.examples.Arith"
+PGM="instrumentation.examples.Switch"
+
 
 ## compile all the code outside Eclipse
 ./compile.sh
@@ -26,6 +28,6 @@ done
 ##  - produce execution trace on output file trace.out
 java -cp $CP \
     -javaagent:iagent.jar \
-    instrumentation.Wrapper ${PGM} | awk '{$1=""; print $0}' > trace.out
+    instrumentation.Wrapper ${PGM}  > trace.out
 
 java -cp $CP replayer.Main

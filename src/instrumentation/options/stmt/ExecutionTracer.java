@@ -2,7 +2,6 @@ package instrumentation.options.stmt;
 
 import instrumentation.options.ITransform;
 
-import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -107,7 +106,7 @@ public class ExecutionTracer implements ITransform {
     StringWriter sw = new StringWriter();
     printer.print(new PrintWriter(sw));
     printer.getText().clear();
-    return sw.toString();
+    return sw.toString().replace("\n", "\t");
   }
   
   private static Printer printer = new Textifier();
@@ -126,7 +125,9 @@ public class ExecutionTracer implements ITransform {
 
   public static void dump() throws Exception {
     
-   System.out.println(log);
+   for (String str : log) {
+     System.out.println(str);
+   }
    
    
 //TODO: Need to check why this code raises ClassNotFoundException -Marcelo
