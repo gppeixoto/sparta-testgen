@@ -1,0 +1,3 @@
+- handle library classes
+- handle native methods
+- do not assume methods do not contain "_"

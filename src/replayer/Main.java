@@ -4,11 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +20,7 @@ public class Main {
   Heap heap;
   OperandStack operandStack;
   CallStack callStack;
+  StaticArea sa;
   
   public Main(List<String> input) {
     instructionTrace = input;
@@ -29,6 +28,7 @@ public class Main {
     heap = new Heap(); 
     callStack = new CallStack();
     operandStack = callStack.push("main");
+    sa = new StaticArea();
 
     replay();
   }
@@ -67,7 +67,7 @@ public class Main {
     LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
     INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, 
     FRAME, ANEWARRAY, AASTORE, PUTSTATIC, GETFIELD, AALOAD, SIPUSH,
-    DSTORE, DLOAD, DMUL, DADD, DDIV, DSUB, LOOKUPSWITCH
+    DSTORE, DLOAD, DMUL, DADD, DDIV, DSUB, LOOKUPSWITCH, INVOKEVIRTUAL
     };
 
   public void replay() {
@@ -76,6 +76,8 @@ public class Main {
     
     for(int i = 0; i < instructionTrace.size(); i++) {
       String insn = instructionTrace.get(i);
+      
+//      System.out.println(insn);
 
       // parsing instruction string
       // TODO: optimize this if inefficient
@@ -207,10 +209,11 @@ public class Main {
         try {
           int idx = complementOne.lastIndexOf(".");
           String clazz = complementOne.substring(0, idx).replace('/', '.');
-          String field = complementOne.substring(idx+1);
-          Field f = Class.forName(clazz).getDeclaredField(field);
-          f.setAccessible(true);
-          operandStack.push(f.get(null));
+          String fieldName = complementOne.substring(idx+1);
+//          Field f = Class.forName(clazz).getDeclaredField(fieldName);
+//          f.setAccessible(true);
+//          operandStack.push(f.get(null));
+          operandStack.push(sa.getStatic(Class.forName(clazz), fieldName));
         } catch (Exception e) {
           throw new RuntimeException("check this!");
         }
@@ -220,10 +223,11 @@ public class Main {
         try {
           int idx = complementOne.lastIndexOf(".");
           String clazz = complementOne.substring(0, idx).replace('/', '.');
-          String field = complementOne.substring(idx+1);
-          Field f = Class.forName(clazz).getDeclaredField(field);
-          f.setAccessible(true);
-          f.set(null, operandStack.pop());
+          String fieldName = complementOne.substring(idx+1);
+//          Field f = Class.forName(clazz).getDeclaredField(fieldName);
+//          f.setAccessible(true);
+//          f.set(null, operandStack.pop());
+          sa.putStatic(Class.forName(clazz), fieldName, operandStack.pop());
         } catch (Exception e) {
           e.printStackTrace();
           throw new RuntimeException("check this!");
@@ -237,6 +241,7 @@ public class Main {
       case INVOKESTATIC:
         isStatic = true;
       
+      case INVOKEVIRTUAL:
       case INVOKESPECIAL: 
         int idx = complementOne.lastIndexOf('.');
         String cName = complementOne.substring(0, idx);
@@ -254,7 +259,8 @@ public class Main {
           Constructor<?> cons = (Constructor<?>) aobj;
           numParams = cons.getParameterTypes().length;
           skip = Modifier.isNative(cons.getModifiers());
-          if (!skip && cons.getDeclaringClass()==Object.class && mName.equals("<init>")) {
+          Class<?> clazz = cons.getDeclaringClass();
+          if (!skip && (clazz==Object.class || clazz==Enum.class) && mName.equals("<init>")) {
             skip = true;
           }
         }

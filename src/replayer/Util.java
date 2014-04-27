@@ -9,7 +9,11 @@ public class Util {
   public static AccessibleObject lookup(String[] args) {
     try {
       Class<?> clazz = Class.forName(args[0].replace('/', '.'));
-      String params = args[2].substring(args[2].indexOf("(")+1, args[2].indexOf(")"));
+      String params = "";
+//      if (!args[2].startsWith("()")) {
+//        System.out.println(Arrays.toString(args) + "===> " + args[2]);
+       params = args[2].substring(args[2].indexOf("(")+1, args[2].indexOf(")"));
+//      }
       List<Class<?>> list = new ArrayList<Class<?>>();
       while (!params.equals("")) {
         char c = params.charAt(0);
