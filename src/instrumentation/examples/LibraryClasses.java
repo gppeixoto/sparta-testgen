@@ -5,7 +5,7 @@ public class LibraryClasses {
   
   public static void main(String[] args) {
     integers();
-    strings();
+//    strings();
   }
   
   public static void integers() {

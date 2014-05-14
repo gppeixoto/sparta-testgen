@@ -49,7 +49,7 @@ public class ExecutionTracer implements ITransform {
         AbstractInsnNode in = j.next();
 
         InsnList il = new InsnList();
-        notify(il, insnToString(in));
+        notify(il, insnToString(mn, in));
         
         if (in.getPrevious() == null) {
           // ???
@@ -101,9 +101,10 @@ public class ExecutionTracer implements ITransform {
 //    return insn;
 //  }
 
-  public static String insnToString(AbstractInsnNode insn){
+  public static String insnToString(MethodNode mn, AbstractInsnNode insn){
     insn.accept(mp);
     StringWriter sw = new StringWriter();
+    sw.append(mn.name + " : ");
     printer.print(new PrintWriter(sw));
     printer.getText().clear();
     return sw.toString().replace("\n", "\t");

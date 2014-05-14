@@ -69,6 +69,53 @@ public class Main {
     FRAME, ANEWARRAY, AASTORE, PUTSTATIC, GETFIELD, AALOAD, SIPUSH,
     DSTORE, DLOAD, DMUL, DADD, DDIV, DSUB, LOOKUPSWITCH, INVOKEVIRTUAL
     };
+    
+    /**
+     * ACONST_NULL
+     * ARETURN
+     * ARRAYLENGTH
+     * ATHROW
+     * BALOAD
+     * BASTORE
+     * BREAKPOINT
+     * CALOAD
+     * CASTORE
+     * CHECKCAST
+     * D2F
+     * D2I
+     * D2L
+     * DALOAD
+     * DASTORE
+     * DCMPG
+     * DCMPL
+     * DCONST
+     * DNEG
+     * DREM
+     * DRETURN
+     * DUP_X1
+     * DUP_X2
+     * DUP2
+     * DUP2_X1
+     * DUP2_X2
+     * F2D
+     * F2I
+     * F2L
+     * FADD
+     * FALOAD
+     * FASTORE
+     * FCMPG
+     * FCMPL
+     * FCONST
+     * FDIV
+     * FLOAD
+     * FMUL
+     * FNEG
+     * FREM
+     * FRETURN
+     * FSTORE
+     * FSUB
+     * ... // CONTINUE AFTER F
+     */
 
   public void replay() {
     
@@ -77,7 +124,9 @@ public class Main {
     for(int i = 0; i < instructionTrace.size(); i++) {
       String insn = instructionTrace.get(i);
       
-//      System.out.println(insn);
+      String[] nameIns = insn.split(":"); 
+      System.out.printf("%s : %s\n", nameIns[0], nameIns[1]);
+      insn = nameIns[1].trim();
 
       // parsing instruction string
       // TODO: optimize this if inefficient

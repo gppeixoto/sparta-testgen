@@ -11,7 +11,7 @@ PGMS=(
 "instrumentation.examples.Enum"
 "instrumentation.examples.Switch"
 "instrumentation.examples.StaticRef"
-#"instrumentation.examples.LibraryClasses"
+# "instrumentation.examples.LibraryClasses"
 )
 
 ## compile all the code outside Eclipse
