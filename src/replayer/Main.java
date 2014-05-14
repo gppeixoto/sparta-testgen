@@ -39,14 +39,14 @@ public class Main {
     List<String> buffer = new ArrayList<String>();
     BufferedReader br = new BufferedReader(new FileReader("trace.out"));
     String s;
-    boolean log = false;
+//    boolean log = false;
     while ((s = br.readLine()) != null) {
-      if (!log) {
-        if (s.contains("Method.invoke")) {
-          log = true;
-        }
-        continue;
-      } 
+//      if (!log) {
+//        if (s.contains("Method.invoke")) {
+//          log = true;
+//        }
+//        continue;
+//      } 
       
       buffer.add(s.trim());
     }
@@ -56,7 +56,7 @@ public class Main {
     try {
       (new Main(buffer)).replay();
     } catch (FinishedExecutionException _) {
-      System.out.println("execution replayed");
+      System.out.println("  execution replayed");
     }
     
   }
@@ -125,7 +125,7 @@ public class Main {
       String insn = instructionTrace.get(i);
       
       String[] nameIns = insn.split(":"); 
-      System.out.printf("%s : %s\n", nameIns[0], nameIns[1]);
+//      System.out.printf("%s : %s\n", nameIns[0], nameIns[1]);
       insn = nameIns[1].trim();
 
       // parsing instruction string
