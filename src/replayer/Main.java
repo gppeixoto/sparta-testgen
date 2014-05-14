@@ -529,7 +529,8 @@ public class Main {
       return res;
     }      
     for (; k < instructionTrace.size(); k++) {
-      String tmp = instructionTrace.get(k).trim();
+      String tmp = instructionTrace.get(k);
+      tmp = tmp.split(":")[1].trim(); 
       if (tmp.matches("L\\d*")) {
         labels.put(tmp, k);
         if (tmp.equals(jumpLabel)) {
