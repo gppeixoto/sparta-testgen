@@ -49,7 +49,7 @@ public class ClassInstrumenter implements ClassFileTransformer {
      * it is a class of "interest"
      */
     if (!Util.FILTER_INTEREST || className.contains(Util.INTERESTED)) {
-System.out.print("instrumenting: " + className + "\n");      
+        //System.out.print("instrumenting: " + className + "\n");      
       // building class node object
       ClassReader cr = new ClassReader(classfileBuffer);
       ClassNode cnode = new ClassNode(Opcodes.ASM4);

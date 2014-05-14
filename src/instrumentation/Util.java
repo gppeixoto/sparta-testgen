@@ -4,7 +4,7 @@ public class Util {
   
   public static boolean DEBUG       = false;
   
-  public static final boolean FILTER_INTEREST = false;
+  public static final boolean FILTER_INTEREST = true;
   //TODO: should be regex
   public static String  INTERESTED  = "examples";
 

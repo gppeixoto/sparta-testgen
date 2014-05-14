@@ -17,7 +17,8 @@ done
 ## TRACE GENERATION
 ##  - executes the program with instrumentation agent
 ##  - produce execution trace on output file trace.out
-java -cp $CP \
+##bin:libs/asm-all-5.0.2.jar
+java -cp ${CP} \
     -javaagent:iagent.jar \
     instrumentation.Wrapper ${PGM}  > trace.out
 
