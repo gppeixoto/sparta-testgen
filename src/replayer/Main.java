@@ -30,7 +30,6 @@ public class Main {
     operandStack = callStack.push("main");
     sa = new StaticArea();
 
-    replay();
   }
 
   public static void main(String[] args) throws Exception {
@@ -39,15 +38,7 @@ public class Main {
     List<String> buffer = new ArrayList<String>();
     BufferedReader br = new BufferedReader(new FileReader("trace.out"));
     String s;
-//    boolean log = false;
     while ((s = br.readLine()) != null) {
-//      if (!log) {
-//        if (s.contains("Method.invoke")) {
-//          log = true;
-//        }
-//        continue;
-//      } 
-      
       buffer.add(s.trim());
     }
     br.close();   
