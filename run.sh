@@ -20,6 +20,7 @@ done
 ##bin:libs/asm-all-5.0.2.jar
 java -cp ${CP} \
     -javaagent:iagent.jar \
+    -noverify \
     instrumentation.Wrapper ${PGM}  > trace.out
 
 java -cp $CP replayer.Main
