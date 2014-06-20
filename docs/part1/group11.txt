@@ -1,0 +1,82 @@
+From c58e86ef8e0dd6f3c4029ed0318ad82b9c5fb623 Mon Sep 17 00:00:00 2001
+From: lfn2 <lfn2@cin.ufpe.br>
+Date: Tue, 10 Jun 2014 21:09:46 -0300
+Subject: [PATCH] Grupo 11: goto_w, i2b, i2c, i2d, ret, saload, sastore, swap.
+
+---
+ src/replayer/Main.java | 52 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 50 insertions(+), 2 deletions(-)
+
+diff --git a/src/replayer/Main.java b/src/replayer/Main.java
+index 0d8cf52..359d8f9 100644
+--- a/src/replayer/Main.java
++++ b/src/replayer/Main.java
+@@ -58,7 +58,7 @@ public class Main {
+     LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
+     INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, 
+     FRAME, ANEWARRAY, AASTORE, PUTSTATIC, GETFIELD, AALOAD, SIPUSH,
+-    DSTORE, DLOAD, DMUL, DADD, DDIV, DSUB, LOOKUPSWITCH, INVOKEVIRTUAL
++    DSTORE, DLOAD, DMUL, DADD, DDIV, DSUB, LOOKUPSWITCH, INVOKEVIRTUAL, I2B, I2C, I2D, SWAP, SALOAD, SASTORE, RET, GOTO_W
+   };
+ 
+   /**
+@@ -163,7 +163,55 @@ public class Main {
+       /**
+        * decide which instruction to apply
+        */
+-      switch (kind) {
++      int value;
++      switch (kind) {   
++      
++      case RET:
++        operandStack.load(Integer.parseInt(complementOne));
++        i = lookupForLabel(labels, (String) operandStack.pop(), i);
++        break;
++      
++      case GOTO_W:
++        i = lookupForLabel(labels, complementOne+complementTwo, i);
++        break;
++      
++      case SASTORE:
++        Object v = operandStack.pop();
++        int indx = (Integer) operandStack.pop();
++        HeapCell arref = (HeapCell) operandStack.pop();
++        arref.store((short) indx+"", v);
++        break;
++      
++      case SALOAD:
++        int ind = (Integer) operandStack.pop();
++        HeapCell ref = (HeapCell) operandStack.pop();
++        operandStack.push((Integer) ref.load(ind+""));
++        break;
++      
++      case SWAP:
++        Object v1 = operandStack.pop();
++        Object v2 = operandStack.pop();
++        operandStack.push(v1);
++        operandStack.push(v2);
++        break;      
++      
++      case I2D:
++        value = (Integer) operandStack.pop();
++        double d = (double) value;
++        operandStack.push(d);
++        break;
++      
++      case I2C:
++        value = (Integer) operandStack.pop();
++        char c = (char) value;
++        operandStack.push((int) c);
++        break;
++      
++      case I2B:
++          value = (Integer) operandStack.pop();
++          byte b = (byte) value;
++          operandStack.push((int) b);
++          break; 
+ 
+       case BIPUSH:
+         operandStack.push(Integer.parseInt(complementOne));
+-- 
+1.8.3.msysgit.0
+
