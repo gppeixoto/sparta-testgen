@@ -39,6 +39,14 @@ class OperandStack {
   public Object peek() {
     return stack.peek();
   }
+  
+  Map<Integer,Object> getLocals() {
+    return locals;
+  }
+
+  public boolean empty() {
+    return stack.empty();
+  }
 
 
 }
