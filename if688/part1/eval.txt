@@ -37,7 +37,7 @@ Lucas Almeida Pereira de Lima (lapl)
  - [X] CALOAD
  - [X] CASTORE
  - [X] D2F
- - [X] invokeinterface
+ - [?] invokeinterface
  - [ ] jsr
  - [ ] jsr_w
    Alunos argumentam que instruções de jump não são necessárias (com razão).
@@ -223,7 +223,7 @@ Germano Zaicaner (gz)
 Hugo Bessa (hrba)
 Vitor Maristane (vhma)
 
- - [ ] patch
+ - [X] patch
  - [ ] legibilidade
    - quase não achei a implementação do if_acmpeq
  - [X] i2f
@@ -233,7 +233,7 @@ Vitor Maristane (vhma)
  - [X] ifle
  - [X] if_acmpeq
 
-**** Nota: 8
+**** Nota: 9
 
 *** Grupo 13:
 Gustavo Luiz Benevides de Oliveira (glbo)
@@ -248,10 +248,10 @@ Victor Chaves Casé (vcc3)
 Carlos Rafael de Oliveira do Amaral Leitão (croal)
 Juliane Sabrina Magalhães de Nascimento (jsmn)
 
- - [X] patch
- - [ ] legibilidade 
- - [ ] tableswitch 
-   Não encontrei nenhuma implementação da instrução,
-   ou explicação dos alunos.
+ - [ ] patch
+   Há um patch, mas o conteúdo não é de nenhuma utilidade. Por favor,
+   confiram a saída do comando da próxima vez.
+ - [X] legibilidade 
+ - [X] tableswitch 
 
-**** Nota: 0
+**** Nota: 9
