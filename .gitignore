@@ -1,0 +1,4 @@
+bin
+*~
+iagent.jar
+trace.out

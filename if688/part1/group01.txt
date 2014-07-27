@@ -1,0 +1,192 @@
+diff --git a/src/replayer/HeapCell.java b/src/replayer/HeapCell.java
+index cb5cf03..9b7e6be 100644
+--- a/src/replayer/HeapCell.java
++++ b/src/replayer/HeapCell.java
+@@ -8,6 +8,10 @@ public class HeapCell {
+   // non-native
+   private Map<String, Object> map = new HashMap<String, Object>();
+ 
++  public int getMapSize(){
++    return map.size();
++  }
++  
+   public Object load(String name) {
+     return map.get(name);
+   }
+diff --git a/src/replayer/Main.java b/src/replayer/Main.java
+index 0d8cf52..d8b13c1 100644
+--- a/src/replayer/Main.java
++++ b/src/replayer/Main.java
+@@ -52,7 +52,8 @@ public class Main {
+ 
+   }
+ 
+-  enum OPCODE {BIPUSH, ISTORE, ILOAD, ICONST, 
++  enum OPCODE {ACONST_NULL, ARETURN, ARRAYLENGTH, BALOAD, IFNULL,
++    IINC, INVOKEDYNAMIC, BIPUSH, ISTORE, ILOAD, ICONST, 
+     RETURN, NEWARRAY, DUP, IASTORE, IALOAD, ASTORE, ALOAD, 
+     LDC, GETSTATIC, NEW, INVOKESPECIAL, PUTFIELD, INVOKESTATIC, 
+     LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
+@@ -62,11 +63,11 @@ public class Main {
+   };
+ 
+   /**
+-   * ACONST_NULL
+-   * ARETURN
+-   * ARRAYLENGTH
++   * ACONST_NULL - nosso  (feito)
++   * ARETURN - nosso  (feito)
++   * ARRAYLENGTH - nosso (feito?)
+    * ATHROW
+-   * BALOAD
++   * BALOAD - nosso (feito?)
+    * BASTORE
+    * BREAKPOINT
+    * CALOAD
+@@ -106,6 +107,10 @@ public class Main {
+    * FSTORE
+    * FSUB
+    * ... // CONTINUE AFTER F
++   * 
++   * ifnull - nosso (feito)
++   * iinc - nosso (feito)
++   * invokedynamic - nosso
+    */
+ 
+   public OPCODE lookupOpcode(String str) {   
+@@ -134,6 +139,7 @@ public class Main {
+     for(int i = 0; i < instructionTrace.size(); i++) {
+       
+       String insn = instructionTrace.get(i);
++      
+       String[] nameIns = insn.split(":"); 
+       insn = nameIns[1].trim();
+       String[] splits = insn.split("\\s++|_");
+@@ -154,9 +160,11 @@ public class Main {
+       /**
+        * update complements of instructions
+        */
++      System.out.println(splits[0] + " e " + splits[1]);
+       String[] complements = extractComplements(splits);
+       String complementOne = complements[0];
+       String complementTwo = complements[1];
++      System.out.println("Virou " + complementOne + " e " + complementTwo);
+ 
+       boolean isStatic = false;
+ 
+@@ -165,6 +173,67 @@ public class Main {
+        */
+       switch (kind) {
+ 
++      case ACONST_NULL:
++          operandStack.push(null);
++         break;
++        
++      case ARETURN:
++          Object objectref = operandStack.pop();
++          operandStack = callStack.pop();
++          operandStack.push(objectref);
++          break;
++      
++      case ARRAYLENGTH:
++        // The arrayref must be of type reference and must refer to an array. It is popped from the operand stack.
++        HeapCell arrayref = (HeapCell) operandStack.pop();
++        // The length of the array it references is determined. That length is pushed onto the operand stack as an int.
++        operandStack.push(arrayref.getMapSize());
++        // Para isso, criamos o metodo getMapSize() em HeapCell para acessar o tamanho do Map, pois este eh privado.
++        break;
++      
++      case BALOAD:
++        //The arrayref must be of type reference and must refer to an array
++        //whose components are of type byte or of type boolean. 
++        
++        //The index must be of type int. 
++        //Both arrayref and index are popped from the operand stack
++        int indice = (Integer) operandStack.pop();
++        HeapCell arrayRef = (HeapCell) operandStack.pop();
++        Object objetoCarregado = (Object) arrayRef.load(indice+"");
++        int inteiroCarregar = 0;
++        
++        //The byte value in the component of the array at index is retrieved,
++        //sign-extended to an int value, and pushed onto the top of the operand stack.
++        
++        // Caso o objeto seja um byte
++        if (objetoCarregado instanceof Byte) inteiroCarregar = ((Byte)objetoCarregado).intValue();
++        // Caso seja um boolean
++        else if (objetoCarregado instanceof Boolean){
++          if (((Boolean)objetoCarregado).booleanValue()) inteiroCarregar = 1;
++          else inteiroCarregar = 0;
++        } 
++        
++        // Colocando na operandStack
++        operandStack.push(inteiroCarregar);
++        break;
++        
++      case IFNULL:
++        Object valor = operandStack.pop();
++        if (valor==null) {
++          i = lookupForLabel(labels, complementTwo, i);
++        }
++        break;
++     
++      case IINC:
++        operandStack.load(Integer.parseInt(complementOne)); // coloca o valor da variavel em index na pilha
++        int valorVariavel = (Integer) operandStack.pop(); // recupera o valor da variavel
++        int valorConstante = Integer.parseInt(complementTwo); // valor a ser incrementado 
++        int resultado = valorVariavel + valorConstante; // resultado a ser salvo
++        operandStack.push(resultado); // coloca o resultado na pilha
++        operandStack.store(Integer.parseInt(complementOne)); // coloca o resultado colocado na pilha na variavel
++        
++        break;
++      
+       case BIPUSH:
+         operandStack.push(Integer.parseInt(complementOne));
+         break;
+@@ -263,6 +332,39 @@ public class Main {
+       case NEW: 
+         operandStack.push(heap.newCell());
+         break;
++        
++      case INVOKEDYNAMIC:
++        int idxDyn = complementOne.lastIndexOf('.');
++        String cNameDyn = complementOne.substring(0, idxDyn);
++        String mNameDyn = complementOne.substring(idxDyn+1);
++        String[] argsDyn = new String[]{cNameDyn, mNameDyn, complementTwo};
++        AccessibleObject aObj = Util.lookup(argsDyn);
++        
++        Method metodo = (Method) aObj;
++        int numParametros = metodo.getParameterTypes().length;
++        
++        
++        List<Object> listParametros = new ArrayList<Object>();
++        for (int k = 0; k < numParametros; k++) {
++          listParametros.add(operandStack.pop());
++        }
++        
++        Object methodType = operandStack.pop();
++        Object methodName = operandStack.pop();
++        Object methodLookup = operandStack.pop();
++        Object methodHandle = operandStack.pop();
++        
++        listParametros.add(methodType);
++        listParametros.add(methodName);
++        listParametros.add(methodLookup);
++        listParametros.add(methodHandle);
++        
++        operandStack = callStack.push(cNameDyn + mNameDyn);
++        for (int j = 0 ; j < (int) listParametros.size(); ++j){
++          operandStack.store(listParametros.size()-j-1, listParametros.get(j));
++        }
++      break;
++        
+ 
+       case INVOKESTATIC:
+         isStatic = true;
+@@ -457,6 +559,7 @@ public class Main {
+           i = lookupForLabel(labels, complementTwo, i);
+         }
+         break;
++        
+ 
+       case GOTO:
+         i = lookupForLabel(labels, complementOne, i);

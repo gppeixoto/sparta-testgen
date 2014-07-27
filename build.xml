@@ -1,0 +1,89 @@
+<project name="sparta-code" default="build" basedir=".">
+
+    <description>
+      This is the REPLAYER project
+    </description>
+
+    <!-- loads property file -->
+    <property file="build.properties"/>
+
+    <!-- Checks for environmental consistency -->
+    <fail message="check your build.properties for missing properties!">
+        <condition>
+            <and>
+                <not> <isset property="libs.dir"/> </not>
+                <not> <isset property="asm.jar.file"/> </not>
+                <not> <isset property="agent.jar.file"/> </not>
+            </and>
+        </condition>
+    </fail>
+
+    <!-- Auxiliary names used in script --> 
+    <property name="run.tests.should.fork" value="true"/>
+    <property name="halt.on.test.failure" value="true"/>
+    <property name="src" value="src"/>
+    <property name="build" value="bin"/>
+
+    <!-- clean generated files -->
+    <target name="clean" description="Remove generated files">
+        <delete dir="${build}"/>
+        <delete file="${agent.jar.file}"/>
+        <delete file="${basedir}/trace.out"/>
+        <delete failonerror="false">
+            <fileset dir="${build.tests}" includes="**/*.class"/>
+        </delete>
+    </target>
+
+
+    <!-- Define the CLASSPATH -->
+    <path id="compile.classpath">
+      <fileset dir="${libs.dir}">
+        <include name="*.jar"/>
+      </fileset>
+      <pathelement location="${build}"/>
+    </path>
+
+    <target name ="prep">
+      <mkdir dir="${build}"/>
+    </target>
+    
+    <!-- Builds the project -->
+    <target name ="build" depends="prep">
+      <javac srcdir="${src}"
+             destdir="${build}">
+        <classpath refid="compile.classpath"/>
+      </javac>
+    </target>
+    
+    <!-- This creates ${agent.jar.file} -->
+    <target name="jar" depends="build"
+            description="Create jar file">
+      <jar destfile="${agent.jar.file}">
+        <fileset dir="${build}" includes="instrumentation/**"/>
+        <manifest>
+          <attribute name="Manifest-Version" value="1.0"/>
+          <attribute name="Premain-Class" value="instrumentation.agent.InstrumentationAgent"/>
+        </manifest>
+      </jar>
+    </target>
+
+    <target name="run-example" depends="">
+      <java classname="instrumentation.Wrapper" fork="true"
+          failonerror="true" output="trace.out" logError="true">
+        <classpath>
+          <pathelement path="${build}"/>
+          <pathelement location="${asm.jar.file}"/>
+        </classpath>
+        <arg value="examples.Arith" />
+        <jvmarg line="-javaagent:iagent.jar" />
+      </java>
+
+<!--       <java classname="replayer.Main"  -->
+<!--             failonerror="true" logError="true"> -->
+<!--         <classpath> -->
+<!--           <pathelement path="${build}"/> -->
+<!--         </classpath> -->
+<!--       </java> -->
+    </target>
+
+</project>

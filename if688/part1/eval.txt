@@ -1,0 +1,257 @@
+* 2014
+** Entrega 1
+
+- 8 pontos por implementação, 1 por submeter um patch, 1 por
+  legibilidade
+- checkbox marcado = entrega realizada/critério completado (ainda pode
+  haver comentários descrevendo erros na implementação)
+
+*** Grupo 1:
+Larissa Navarro Passos de Araujo (lnpa)
+Leonardo José de Andrade Costa Santos (ljacs)
+Maria Gabriela Toledo de Moraes Cardoso (mgtmc)
+
+- [X] patch
+- [X] legivel
+- [X] ACONST_NULL
+- [X] ARETURN
+- [X] ARRAYLENGTH Erro: map.size() retorna o número de elementos no
+  momento, e não a quantidade máxima. Como arraylength deve retornar a
+  capacidade do array, a implementação está incorreta.
+- [X] BALOAD
+- [X] ifnull
+- [X] iinc
+- [X] invokedynamic
+  Instrução não é utilizada por programas java, então não irei avaliá-la
+
+**** Nota: 9
+
+*** Grupo 2:
+Bertha Maria Correia Andaluz (bmca)
+Duhan Caraciolo Maia Souza (dcms2)
+Lucas Almeida Pereira de Lima (lapl)
+
+ - [X] patch
+ - [X] legivel
+ - [X] BASTORE
+ - [X] CALOAD
+ - [X] CASTORE
+ - [X] D2F
+ - [?] invokeinterface
+ - [ ] jsr
+ - [ ] jsr_w
+   Alunos argumentam que instruções de jump não são necessárias (com razão).
+ - [X] l2d
+
+**** Nota: 10
+
+*** Grupo 3:
+Guilherme Palma Peixoto (gpp)
+Rafael Acevedo de Aguiar (raa7)
+
+ - [X] patch
+ - [X] legivel
+ - [X] D2I
+ - [X] D2L
+ - [X] DALOAD
+ - [X] DASTORE
+ - [X] l2f
+ - [X] l2i
+ - [X] ladd
+ - [X] laload
+
+**** Nota: 10
+
+*** Grupo 4:
+Eduardo de Albuquerque Pires (eap3)
+Mateus Moury Fernandes da Rosa Borges (mmfrb)
+Vinícius de Moraes Rêgo Cousseau (vmrc)
+
+ - [X] patch
+ - [X] legivel
+ - [X] DCMPG
+ - [X] DCMPL
+ - [X] DCONST
+ - [X] DNEG
+ - [X] land
+ - [X] lastore
+ - [X] lconst_0
+ - [X] lconst_1 
+   Erro: Ambas as implementações de lconst estão
+   incorretas, pois não tratam o '_'. A implementação de DCONST está
+   correta.
+
+**** Nota: 9
+
+*** Grupo 5:
+Arthur Lubambo Peixoto Accioly (alpa)
+Franklin Leandro Acioly Lucena (flal)
+Rodrigo de Melo Silva (rms10)
+
+ - [X] patch
+ - [X] legibilidade
+ - [X] DREM
+   Erro - ordem dos 'pops' (parametros) estava invertida
+ - [X] DRETURN
+ - [X] DUP_X1
+ - [X] DUP_X2
+   Erro - nao trata '_' corretamente.
+ - [X] ldc_w
+ - [X] ldc2_w
+   Erro - não trata '_' corretamente, não suporta strings...
+ - [X] ldiv
+   Erro - ordem dos 'pops' invertido
+ - [X] lload
+
+**** Nota: 7
+
+*** Grupo 6:
+Antonio Alves Correia (aac)
+Bruno Resende Pinheiro (brp)
+
+ - [ ] patch
+ - [ ] legibilidade
+   Instruções espalhadas pelo código.
+ - [X] DUP2
+ - [X] DUP2_X1
+ - [X] DUP2_X2
+   Erro: '_' não é lidado corretamente. O resto parece correto
+ - [X] F2D
+ - [X] lload_0
+ - [X] lload_1
+ - [X] lload_2
+ - [X] lload_3
+   Erro: '_' não é lidado corretamente, em nenhum dos lloads
+
+**** Nota: 7
+
+*** Grupo 7:
+Fernando Maranhão Pessoa Nazareth
+Everton Martins Guimarães
+
+ - [ ] patch
+ - [X] legibilidade
+ - [X] F2I
+ - [X] F2L
+ - [X] FADD
+ - [X] FALOAD
+ - [X] lmul
+ - [X] lneg
+ - [X] lor
+ - [X] lrem
+
+**** Nota: 9
+
+*** Grupo 8:
+Miguel Rodrigues Araújo (mra2)
+Raissa Gabrielle da Cunha Andrade (rgca)
+
+ - [ ] patch
+   O patch possui 4k linhas. 
+ - [ ] legibilidade
+ - [X] FASTORE
+ - [X] FCMPG
+ - [X] FCMPL
+   Erro: Os dois opcodes passados não testam a presença de NaNs
+ - [X] FCONST
+ - [X] lreturn
+ - [X] lshl
+ - [X] lshr
+   Error - trocou a ordem dos pops.
+ - [X] FDIV
+   Erro - pushing a double instead of a float
+
+**** Nota: 7
+
+*** Grupo 9:
+George Oliveira (ghao)
+Lucas Nunes (lns2)
+Natanael Santos (nss)
+
+ - [ ] patch
+ - [X] legibilidade
+ - [X] lstore
+ - [X] FLOAD
+ - [X] FMUL
+ - [X] FNEG
+ - [X] lstore_0
+ - [X] lstore_1
+ - [X] lstore_2
+ - [X] lstore_3
+   Erro - não trata o '_'
+
+**** Nota: 8
+
+*** Grupo 10:
+Nícolas Oliveira (nogn)
+Rafael Monteiro (rmfm)
+
+ - [ ] patch
+ - [X] legibilidade
+ - [X] FREM
+   Erro - pushing a double
+ - [X] FRETURN
+   Erro - pushing a double
+ - [X] FSTORE
+ - [X] FSUB
+ - [X] lsub
+ - [X] lushr
+ - [X] nop
+ - [X] pop2
+
+**** Nota: 8
+
+*** Grupo 11:
+Lucas da Fonseca Netto (lfn2)
+João Pedro de Carvalho Magalhães (jpcm)
+
+ - [X] patch
+ - [X] legibilidade
+ - [X] goto_w
+ - [X] i2b
+ - [X] i2c
+ - [X] i2d
+ - [X] ret
+ - [X] saload
+ - [X] sastore
+ - [X] swap
+
+**** Nota: 10
+
+*** Grupo 12:
+Germano Zaicaner (gz)
+Hugo Bessa (hrba)
+Vitor Maristane (vhma)
+
+ - [X] patch
+ - [ ] legibilidade
+   - quase não achei a implementação do if_acmpeq
+ - [X] i2f
+ - [X] i2l
+ - [X] i2s
+ - [X] ifgt
+ - [X] ifle
+ - [X] if_acmpeq
+
+**** Nota: 9
+
+*** Grupo 13:
+Gustavo Luiz Benevides de Oliveira (glbo)
+Pedro Henriques de Faria Neves (phfn)
+Victor Chaves Casé (vcc3)
+
+ - nao encontrei o trabalho.
+
+**** Nota: 0
+
+*** Grupo 14:
+Carlos Rafael de Oliveira do Amaral Leitão (croal)
+Juliane Sabrina Magalhães de Nascimento (jsmn)
+
+ - [ ] patch
+   Há um patch, mas o conteúdo não é de nenhuma utilidade. Por favor,
+   confiram a saída do comando da próxima vez.
+ - [X] legibilidade 
+ - [X] tableswitch 
+
+**** Nota: 9

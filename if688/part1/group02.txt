@@ -1,0 +1,168 @@
+diff --git a/bug_report.txt b/bug_report.txt
+new file mode 100644
+index 0000000..7697e28
+--- /dev/null
++++ b/bug_report.txt
+@@ -0,0 +1,24 @@
++Código:
++
++public static void main(String[] args) {
++    int ar[] = new int[]{0,0};
++    int x = ar[0] + ar[1]; 
++}
++
++Problema:
++
++Se mudamos o main da classe IntArrays para o código acima e rodamos ./run.sh examples.IntArrays recebemos o erro:
++Exception in thread "main" java.lang.NullPointerException
++
++Porém quando criamos uma classe nova com esse código o erro não acontece.
++
++Uma situação parecida ocorre quando o código é:
++
++public static void main(String[] args) {
++    int i = 0;
++    while (i < 2) i = 1 + 1;
++}
++
++O erro apresentado é:
++Exception in thread "main" java.lang.RuntimeException: ERROR: Could not find requested label!
++
+diff --git a/docs/comments_group2.txt b/docs/comments_group2.txt
+new file mode 100644
+index 0000000..942ccf2
+--- /dev/null
++++ b/docs/comments_group2.txt
+@@ -0,0 +1,20 @@
++Inclusão de novas instruções:
++
++BASTORE/CASTORE: Utilizam a mesma abordagem das instruções AASTORE e IASTORE que haviam sido previamente implementadas.
++
++CALOAD: Utiliza a mesma abordagem das instruções AALOAD e IALOAD que haviam sido previamente implementadas.
++
++INVOKEINTERFACE: Utiliza a mesma abordagem das instruções INVOKEVIRTUAL, INVOKESTATIC e INVOKESPECIAL que haviam sido previamente implementadas.
++
++D2F: Precisamos apenas fazer um cast no double que estava no topo da pilha e inserí-lo de volta como float.
++
++L2D: A ideia é parecida com a do D2F, porém devido à implementação da instrução LDC, precisamos checar se o topo da pilha é raelmente um long ou um int.
++
++Mudança na instrução LDC:
++
++Para podermos trabalhar com o tipo long na instrução L2D modificamos a implementação da instrução LDC, de forma a incluir uma possibilidade de parse de String para esse tipo.
++
++Ausência de instruções JSR e JSR_W:
++
++Essas instruções não estão presentes no código acrescentado pelo fato de precisarem de mudanças na instrumentação para serem implementadas. Ambas inserem o opcode da instrução seguinte (do código-fonte) na pilha, de forma que posteriormente seja acessado por uma instrução do tipo ret. Porém, estamos trabalhando com o trace.out, que lista as instruções na ordem que elas foram executadas, precisando de mudanças para que a label desejada fosse acessada.
++
+diff --git a/src/replayer/Main.java b/src/replayer/Main.java
+index 0d8cf52..66baabc 100644
+--- a/src/replayer/Main.java
++++ b/src/replayer/Main.java
+@@ -58,7 +58,7 @@ public class Main {
+     LINENUMBER, IADD, IRETURN, POP, ISUB, IMUL, IDIV, IREM, 
+     INEG, IAND, IOR, ISHL, ISHR, IUSHR, IXOR, LCMP, IF, GOTO, 
+     FRAME, ANEWARRAY, AASTORE, PUTSTATIC, GETFIELD, AALOAD, SIPUSH,
+-    DSTORE, DLOAD, DMUL, DADD, DDIV, DSUB, LOOKUPSWITCH, INVOKEVIRTUAL
++    DSTORE, DLOAD, DMUL, DADD, DDIV, DSUB, LOOKUPSWITCH, INVOKEVIRTUAL, BASTORE, CASTORE, CALOAD, D2F, L2D, INVOKEINTERFACE
+   };
+ 
+   /**
+@@ -118,7 +118,7 @@ public class Main {
+     }
+     return kind;
+   }
+-  
++
+   public void replay() {
+ 
+     /**
+@@ -132,7 +132,7 @@ public class Main {
+      * look across all instructions in the trace
+      */
+     for(int i = 0; i < instructionTrace.size(); i++) {
+-      
++
+       String insn = instructionTrace.get(i);
+       String[] nameIns = insn.split(":"); 
+       insn = nameIns[1].trim();
+@@ -209,6 +209,8 @@ public class Main {
+ 
+       case AASTORE:
+       case IASTORE:
++      case BASTORE:
++      case CASTORE:
+         Object val = operandStack.pop();
+         int index = (Integer) operandStack.pop();
+         HeapCell arRef = (HeapCell) operandStack.pop();
+@@ -216,6 +218,7 @@ public class Main {
+         break;
+ 
+       case AALOAD:
++      case CALOAD:
+       case IALOAD:
+         index = (Integer) operandStack.pop();
+         arRef = (HeapCell) operandStack.pop();
+@@ -229,14 +232,20 @@ public class Main {
+           operandStack.push(k);
+         } catch(NumberFormatException _) {
+           try {
+-            double k = Double.parseDouble(complementOne);
++            long k = Long.parseLong(complementOne);
+             operandStack.push(k);
+           } catch(NumberFormatException __) {
+-            operandStack.push(complementOne);
++            try {
++              double k = Double.parseDouble(complementOne);
++              operandStack.push(k);
++            } catch (NumberFormatException ___) {
++              operandStack.push(complementOne);
++            }
+           } 
+         }
+         break;
+ 
++
+       case GETSTATIC:
+         try {
+           int idx = complementOne.lastIndexOf(".");
+@@ -268,6 +277,7 @@ public class Main {
+         isStatic = true;
+ 
+       case INVOKEVIRTUAL:
++      case INVOKEINTERFACE:
+       case INVOKESPECIAL: 
+         int idx = complementOne.lastIndexOf('.');
+         String cName = complementOne.substring(0, idx);
+@@ -492,6 +502,23 @@ public class Main {
+         i = lookupForLabel(labels, gotoLabel, i);
+         break;
+ 
++      case D2F:
++        double value = (Double) operandStack.pop();
++        operandStack.push((float) value);
++        break;
++
++      case L2D:
++        Object value_o = null;
++        try {
++          value_o = operandStack.pop();
++          long value_long = (Long) value_o;
++          operandStack.push((double) value_long); 
++        } catch (ClassCastException _) {
++          int value_int = (Integer) value_o;
++          operandStack.push((double) value_int);
++        }
++        break;
++
+       default:
+         throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
+       }
+@@ -528,7 +555,7 @@ public class Main {
+     }
+     return res;
+   }
+-  
++
+   public String[] extractComplements(String[] splits) {
+     String complementOne, complementTwo, complementThree;
+     complementOne = complementTwo = complementThree = null;

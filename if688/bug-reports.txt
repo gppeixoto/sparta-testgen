@@ -1,0 +1,22 @@
+*** bug reports (from students)
+
+public static void main(String[] args) {
+    int ar[] = new int[]{0,0};
+    int x = ar[0] + ar[1]; 
+}
+
+Se mudamos o main da classe IntArrays para o código acima e rodamos
+./run.sh examples.IntArrays recebemos o erro: Exception in thread
+"main" java.lang.NullPointerException
+
+Porém quando criamos uma classe nova com esse código o erro não acontece.
+
+Uma situação parecida ocorre quando o código é:
+
+public static void main(String[] args) {
+    int i = 0;
+    while (i < 2) i = 1 + 1;
+}
+
+O erro apresentado é: Exception in thread "main"
+java.lang.RuntimeException: ERROR: Could not find requested label!
