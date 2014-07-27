@@ -23,15 +23,18 @@ public class Main {
   OperandStack operandStack;
   CallStack callStack;
   StaticArea sa;
-
+  Map<String,ArrayList<String>> set;//variavel pra variaveis que influenciam no resultado da variavel
+	Map<String, String> varToFeature;
+	ArrayList<String> lastGet;
   public Main(List<String> input) {
     instructionTrace = input;
-
     heap = new Heap(); 
     callStack = new CallStack();
     operandStack = callStack.push("main");
     sa = new StaticArea();
-
+		set = new HashMap<String,ArrayList<String>>();
+		varToFeature = new HashMap<String, String>();
+		lastGet = new ArrayList<String>();
   }
 
   public static void main(String[] args) throws Exception {
@@ -44,7 +47,13 @@ public class Main {
       buffer.add(s.trim());
     }
     br.close();   
-
+		//read features
+    /*List<String> buffer2 = new ArrayList<String>();
+    br = new BufferedReader(new FileReader("features.in"));
+    while ((s = br.readLine()) != null) {
+      buffer2.add(s.trim());
+    }
+    br.close(); */
     // replay
     try {
       (new Main(buffer)).replay();
@@ -676,6 +685,8 @@ public class Main {
           int idx = complementOne.lastIndexOf(".");
           String clazz = complementOne.substring(0, idx).replace('/', '.');
           String fieldName = complementOne.substring(idx+1);
+					lastGet.add(fieldName);
+					System.out.println("LAST GET: "+lastGet);
           operandStack.push(sa.getStatic(Class.forName(clazz), fieldName));
         } catch (Exception e) {
           throw new RuntimeException("check this!");
@@ -685,9 +696,30 @@ public class Main {
       case PUTSTATIC:
         try {
           int idx = complementOne.lastIndexOf(".");
-          String clazz = complementOne.substring(0, idx).replace('/', '.');
+          String clazz = complementOne.substring(0, idx).replace('/', '.');//classe
+		  System.out.println("CLASSE PUTSTATIC: " + clazz);
           String fieldName = complementOne.substring(idx+1);
-          sa.putStatic(Class.forName(clazz), fieldName, operandStack.pop());
+		  System.out.println("fieldName PUTSTATIC: " + fieldName);
+					ArrayList<String> variables = set.get(fieldName);
+					if(variables == null){
+						System.out.println("NULL");
+						System.out.println("LAST GET 2:" +lastGet);
+						ArrayList<String> oi = new ArrayList<String>();
+						for(String s : lastGet){
+							oi.add(s);						
+						}
+						set.put(fieldName,oi);//coloca todas as variaveis no mapa		
+					}else{
+						for(String s : lastGet){//pra todas as variaveis, adiciona no set se nao tiver la
+							if(!variables.contains(s))variables.add(s);					
+						}
+						set.put(fieldName,variables);					
+					}
+					lastGet.clear();//limpa
+					System.out.println("SET: "+set);	
+					Object o = operandStack.pop();
+					System.out.println("Objeto: " + o);
+          sa.putStatic(Class.forName(clazz), fieldName, o);
         } catch (Exception e) {
           e.printStackTrace();
           throw new RuntimeException("check this!");

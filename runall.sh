@@ -2,14 +2,14 @@
 
 ## example programs
 PGMS=(
-"examples.Arith"
-"examples.IntArrays"
-"examples.ControlFlow"
-"examples.ObjectAllocation"
-"examples.RefArrayAllocation"
-"examples.RefArrays"
-"examples.Enum"
-"examples.Switch"
+#"examples.Arith"
+#"examples.IntArrays"
+#"examples.ControlFlow"
+#"examples.ObjectAllocation"
+#"examples.RefArrayAllocation"
+#"examples.RefArrays"
+#"examples.Enum"
+#"examples.Switch"
 "examples.StaticRef"
 # "instrumentation.examples.LibraryClasses"
 )
