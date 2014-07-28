@@ -9,14 +9,14 @@ class OperandStack {
 
   @SuppressWarnings("unused")
   private String mName;
-  private Map<Integer, Object> locals = new HashMap<Integer, Object>();
-  private Stack<Object> stack = new Stack<Object>();
+  private Map<Integer, MyObject> locals = new HashMap<Integer, MyObject>();
+  private Stack<MyObject> stack = new Stack<MyObject>();
 
   OperandStack(String mName) {
     this.mName = mName;
   }
 
-  void push(Object val) {
+  void push(MyObject val) {
     stack.push(val);
   }
 
@@ -24,7 +24,7 @@ class OperandStack {
     locals.put(local, stack.pop());
   }
 
-  public void store(int j, Object object) {
+  public void store(int j, MyObject object) {
     locals.put(j, object);
   }
 
@@ -32,15 +32,15 @@ class OperandStack {
     stack.push(locals.get(local));
   }
 
-  public Object pop() {
+  public MyObject pop() {
     return stack.pop();
   }
 
-  public Object peek() {
+  public MyObject peek() {
     return stack.peek();
   }
   
-  Map<Integer,Object> getLocals() {
+  Map<Integer, MyObject> getLocals() {
     return locals;
   }
 

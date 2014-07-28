@@ -196,47 +196,50 @@ public class Main {
          break;
         
       case ARETURN:
-          Object objectref = operandStack.pop();
+          MyObject objectref = operandStack.pop();
           operandStack = callStack.pop();
           operandStack.push(objectref);
           break;
       
       case ARRAYLENGTH: //TODO: MAB - WRONG!
         // The arrayref must be of type reference and must refer to an array. It is popped from the operand stack.
-        HeapCell arrayref = (HeapCell) operandStack.pop();
+        MyObject myobj = operandStack.pop();
+        HeapCell arrayref = (HeapCell) myobj.getObject();
         // The length of the array it references is determined. That length is pushed onto the operand stack as an int.
-        operandStack.push(arrayref.getMapSize());
+        operandStack.push(new MyObject(arrayref.getMapSize()));
         // Para isso, criamos o metodo getMapSize() em HeapCell para acessar o tamanho do Map, pois este eh privado.
         break;
-      
+      /**
+       * REVISAR NA VOLTA DAQUI PRA CIMA
+       */
       case BALOAD:
         //The arrayref must be of type reference and must refer to an array
         //whose components are of type byte or of type boolean. 
         
         //The index must be of type int. 
         //Both arrayref and index are popped from the operand stack
-        int indice = (Integer) operandStack.pop();
-        HeapCell arrayRef = (HeapCell) operandStack.pop();
-        Object objetoCarregado = (Object) arrayRef.load(indice+"");
+        int indice = (Integer) operandStack.pop().getObject();
+        HeapCell arrayRef = (HeapCell) operandStack.pop().getObject();
+        MyObject objetoCarregado = arrayRef.load(indice+"");
         int inteiroCarregar = 0;
         
         //The byte value in the component of the array at index is retrieved,
         //sign-extended to an int value, and pushed onto the top of the operand stack.
         
         // Caso o objeto seja um byte
-        if (objetoCarregado instanceof Byte) inteiroCarregar = ((Byte)objetoCarregado).intValue();
+        if (objetoCarregado.getObject() instanceof Byte) inteiroCarregar = ((Byte)objetoCarregado.getObject()).intValue();
         // Caso seja um boolean
-        else if (objetoCarregado instanceof Boolean){
-          if (((Boolean)objetoCarregado).booleanValue()) inteiroCarregar = 1;
+        else if (objetoCarregado.getObject() instanceof Boolean){
+          if (((Boolean)objetoCarregado.getObject()).booleanValue()) inteiroCarregar = 1;
           else inteiroCarregar = 0;
         } 
         
         // Colocando na operandStack
-        operandStack.push(inteiroCarregar);
+        operandStack.push(new MyObject((Object)inteiroCarregar));
         break;
         
       case IFNULL:
-        Object valor = operandStack.pop();
+        Object valor = operandStack.pop().getObject();
         if (valor==null) {
           i = lookupForLabel(labels, complementTwo, i);
         }
@@ -244,16 +247,16 @@ public class Main {
      
       case IINC:
         operandStack.load(Integer.parseInt(complementOne)); // coloca o valor da variavel em index na pilha
-        int valorVariavel = (Integer) operandStack.pop(); // recupera o valor da variavel
+        int valorVariavel = (Integer) operandStack.pop().getObject(); // recupera o valor da variavel
         int valorConstante = Integer.parseInt(complementTwo); // valor a ser incrementado 
         int resultado = valorVariavel + valorConstante; // resultado a ser salvo
-        operandStack.push(resultado); // coloca o resultado na pilha
+        operandStack.push(new MyObject((Object) resultado)); // coloca o resultado na pilha
         operandStack.store(Integer.parseInt(complementOne)); // coloca o resultado colocado na pilha na variavel
         
         break;
       
       case BIPUSH:
-        operandStack.push(Integer.parseInt(complementOne));
+        operandStack.push(new MyObject(Integer.parseInt(complementOne)));
         break;
 
       case DSTORE:
@@ -279,7 +282,7 @@ public class Main {
           neg = true;
         }
         int tmp = Integer.parseInt(complementOne);
-        operandStack.push(neg?-tmp:tmp);
+        operandStack.push(new MyObject (neg?-tmp:tmp));
         break;
 
       case RETURN:
@@ -291,42 +294,42 @@ public class Main {
         //TODO: ignoring count.  this will be important to reproduce out-of-bounds exceptions
         operandStack.pop();
         // ignoring type for now
-        operandStack.push(heap.newCell());
+        operandStack.push(new MyObject (heap.newCell()));
         break;
 
       case LAND:
-        long op1 = (Long) operandStack.pop();
-        long op2 = (Long) operandStack.pop();
-        operandStack.push(op1&op2);
+        long op1 = (Long) operandStack.pop().getObject();
+        long op2 = (Long) operandStack.pop().getObject();
+        operandStack.push(new MyObject (op1&op2));
         break;
               
       case LCONST:
         long constant = Long.parseLong(complementOne);
-        operandStack.push(constant);
+        operandStack.push(new MyObject (constant));
         break;
               
       case DCMPG:
       case DCMPL:
               
-        double valor1 = (Double) operandStack.pop();
-        double valor2 = (Double) operandStack.pop();
+        double valor1 = (Double) operandStack.pop().getObject();
+        double valor2 = (Double) operandStack.pop().getObject();
               
         switch(kind){
             case DCMPG:
                 if(valor1 == Double.NaN || valor2 == Double.NaN || valor1 > valor2)
-                    operandStack.push(1);
+                    operandStack.push(new MyObject(1));
                 else if(valor1 == valor2)
-                    operandStack.push(0);
+                    operandStack.push(new MyObject(0));
                 else
-                    operandStack.push(-1);
+                    operandStack.push(new MyObject(-1));
                 break;
             case DCMPL:
                 if(valor1 == Double.NaN || valor2 == Double.NaN || valor1 < valor2)
-                    operandStack.push(-1);
+                    operandStack.push(new MyObject (-1));
                 else if(valor1 == valor2)
-                    operandStack.push(0);
+                    operandStack.push(new MyObject(0));
                 else
-                    operandStack.push(1);
+                    operandStack.push(new MyObject(1));
                 break;
             default:
                  throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
@@ -336,41 +339,44 @@ public class Main {
               
       case DCONST:
         double constante = Double.parseDouble(complementOne);
-        operandStack.push(constante);
+        operandStack.push(new MyObject(constante));
         break;
               
       case DNEG:
-        double to_neg = (Double) operandStack.pop();
-        operandStack.push((-1.0)*to_neg);
+        double to_neg = (Double) operandStack.pop().getObject();
+        operandStack.push(new MyObject((-1.0)*to_neg));
         break;
         
+      /**
+       * mudar axáxá
+       */
       case DUP:
         if (complementOne != null) {
           Object operand1;
           Object operand2;
           
           if (complementOne.equals("X1")) {
-            operand1 = operandStack.pop();
-            operand2 = operandStack.pop();
+            operand1 = operandStack.pop().getObject();
+            operand2 = operandStack.pop().getObject();
             
-            operandStack.push(operand1);
-            operandStack.push(operand2);
-            operandStack.push(operand1);
+            operandStack.push(new MyObject(operand1));
+            operandStack.push(new MyObject(operand2));
+            operandStack.push(new MyObject(operand1));
 
           } else if (complementOne.equals("X2")) {
-            operand1 = operandStack.pop();
-            operand2 = operandStack.pop();
+            operand1 = operandStack.pop().getObject();
+            operand2 = operandStack.pop().getObject();
             
             if ((!(operand1 instanceof Double) || !(operand1 instanceof Long)) && ((operand2 instanceof Double) || (operand2 instanceof Long))) {
-              operandStack.push(operand1);
-              operandStack.push(operand2);
-              operandStack.push(operand1);
+              operandStack.push(new MyObject(operand1));
+              operandStack.push(new MyObject(operand2));
+              operandStack.push(new MyObject(operand1));
             } else {
-              Object operand3 = operandStack.pop();
-              operandStack.push(operand1);
-              operandStack.push(operand3);
-              operandStack.push(operand2);
-              operandStack.push(operand1);
+              Object operand3 = operandStack.pop().getObject();
+              operandStack.push(new MyObject(operand1));
+              operandStack.push(new MyObject(operand3));
+              operandStack.push(new MyObject(operand2));
+              operandStack.push(new MyObject(operand1));
             }
           } else {
             throw new RuntimeException("Unknown case");
@@ -383,22 +389,22 @@ public class Main {
       case DUP2:
         if (complementOne != null) {
           if (complementOne.equals("X1")) {
-            if((operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
+            if((operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
               //Categoria 2
-              Object value1 = operandStack.pop();
-              if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
-                  Object value2 = operandStack.pop();
+              MyObject value1 = operandStack.pop();
+              if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
+                  MyObject value2 = operandStack.pop();
                   operandStack.push(value1);
                   operandStack.push(value2);
               }
-              operandStack.push(value1);
+              operandStack.push(new MyObject(value1));
           }else{
               //Categoria 1
-              Object value1 = operandStack.pop();
-              if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
-                  Object value2 = operandStack.pop();
-                  if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
-                      Object value3 = operandStack.pop();
+              MyObject value1 = operandStack.pop();
+              if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
+                  MyObject value2 = operandStack.pop();
+                  if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
+                      MyObject value3 = operandStack.pop();
                       operandStack.push(value2);
                       operandStack.push(value1);
                       operandStack.push(value3);
@@ -408,15 +414,15 @@ public class Main {
               operandStack.push(value1);
           }
           } else if (complementOne.equals("X2")) {
-            if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
-              Object value1 = operandStack.pop();
-              if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
-                  Object value2 = operandStack.pop();
-                  if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
+            if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
+              MyObject value1 = operandStack.pop();
+              if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
+                  MyObject value2 = operandStack.pop();
+                  if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
                       //Form 1
-                      Object value3 = operandStack.pop();
-                      if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
-                          Object value4 = operandStack.pop();
+                      MyObject value3 = operandStack.pop();
+                      if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
+                          MyObject value4 = operandStack.pop();
                           operandStack.push(value2);
                           operandStack.push(value1);
                           operandStack.push(value4);
@@ -424,7 +430,7 @@ public class Main {
                       operandStack.push(value3);
                   }else{
                       //Form 3
-                      Object value3 = operandStack.pop();
+                      MyObject value3 = operandStack.pop();
                       operandStack.push(value2);
                       operandStack.push(value1);
                       operandStack.push(value3);
@@ -433,19 +439,19 @@ public class Main {
               }
               operandStack.push(value1);
           }else{
-              Object value1 = operandStack.pop();
-              if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
+              MyObject value1 = operandStack.pop();
+              if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
                   //Form 2
-                  Object value2 = operandStack.pop();
-                  if(!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)){
-                      Object value3 = operandStack.pop();
+                  MyObject value2 = operandStack.pop();
+                  if(!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)){
+                      MyObject value3 = operandStack.pop();
                       operandStack.push(value1);
                       operandStack.push(value3);
                   }
                   operandStack.push(value2);
               }else{
                   //Form 4
-                  Object value2 = operandStack.pop();
+                  MyObject value2 = operandStack.pop();
                   operandStack.push(value1);
                   operandStack.push(value2);
               }
@@ -455,11 +461,11 @@ public class Main {
             throw new RuntimeException("Unknown complement");
           }
         } else {
-          if (!(operandStack.peek() instanceof Double || operandStack.peek() instanceof Long)) {
+          if (!(operandStack.peek().getObject() instanceof Double || operandStack.peek().getObject() instanceof Long)) {
             // Categoria 1
-            Object value1 = operandStack.pop();
-            Object value2 = operandStack.peek();
-            if (!(value2 instanceof Double || value2 instanceof Long)) {
+            MyObject value1 = operandStack.pop();
+            MyObject value2 = operandStack.peek();
+            if (!(value2.getObject() instanceof Double || value2.getObject() instanceof Long)) {
               operandStack.push(value1);
               operandStack.push(value2);
             }
@@ -477,9 +483,9 @@ public class Main {
       case CASTORE:
       case DASTORE:
       case LASTORE:
-        Object val = operandStack.pop();
-        int index = (Integer) operandStack.pop();
-        HeapCell arRef = (HeapCell) operandStack.pop();
+        MyObject val = operandStack.pop();
+        int index = (Integer) operandStack.pop().getObject();
+        HeapCell arRef = (HeapCell) operandStack.pop().getObject();
         arRef.store(index+"", val);
         break;
 
@@ -489,44 +495,44 @@ public class Main {
       case LALOAD:
       case DALOAD:
       case FALOAD:
-        index = (Integer) operandStack.pop();
-        arRef = (HeapCell) operandStack.pop();
+        index = (Integer) operandStack.pop().getObject();
+        arRef = (HeapCell) operandStack.pop().getObject();
         operandStack.push(arRef.load(index+""));
         break;
         
       case D2I:
-        double var_d2i1 = (Double) operandStack.pop();
+        double var_d2i1 = (Double) operandStack.pop().getObject();
         if (Double.isNaN(var_d2i1)){
-          operandStack.push((Integer) 0);
+          operandStack.push(new MyObject((Integer) 0));
         } else if (var_d2i1 == Double.POSITIVE_INFINITY){
-          operandStack.push(Integer.MAX_VALUE);
+          operandStack.push(new MyObject(Integer.MAX_VALUE));
         } else if (var_d2i1 == Double.NEGATIVE_INFINITY){
-          operandStack.push(Integer.MIN_VALUE);
+          operandStack.push(new MyObject(Integer.MIN_VALUE));
         } else {
-          operandStack.push((var_d2i1 < 0) ? ((int) Math.ceil(var_d2i1)) : ((int) Math.floor(var_d2i1)));
+          operandStack.push(new MyObject((var_d2i1 < 0) ? ((int) Math.ceil(var_d2i1)) : ((int) Math.floor(var_d2i1))));
         }
         break;
       
       case D2L:
-        double var_d2l = (Double) operandStack.pop();
+        double var_d2l = (Double) operandStack.pop().getObject();
         if (Double.isNaN(var_d2l)){
-          operandStack.push(new Long(0));
+          operandStack.push(new MyObject(new Long(0)));
         } else if (var_d2l == Double.POSITIVE_INFINITY){
-          operandStack.push(Long.MAX_VALUE);
+          operandStack.push(new MyObject(Long.MAX_VALUE));
         } else if (var_d2l == Double.NEGATIVE_INFINITY){
-          operandStack.push(Long.MIN_VALUE);
+          operandStack.push(new MyObject(Long.MIN_VALUE));
         } else {
-          operandStack.push((var_d2l < 0) ? (new Double(Math.ceil(var_d2l)).longValue()) : (new Double(Math.floor(var_d2l))).longValue());
+          operandStack.push(new MyObject((var_d2l < 0) ? (new Double(Math.ceil(var_d2l)).longValue()) : (new Double(Math.floor(var_d2l))).longValue()));
         }
         break;
       
       case L2F:
-        long var_l2f = (Long) operandStack.pop();
-        operandStack.push((float) var_l2f);
+        long var_l2f = (Long) operandStack.pop().getObject();
+        operandStack.push(new MyObject((float) var_l2f));
         break;
       
       case L2I:
-        long var_l2i = (Long) operandStack.pop();
+        long var_l2i = (Long) operandStack.pop().getObject();
         String str_l2i = Long.toBinaryString(var_l2i);
         str_l2i = str_l2i.substring(str_l2i.length()-33>=0?str_l2i.length()-33:0);
         int aux_l2i = 1;
@@ -537,14 +543,14 @@ public class Main {
             }
             aux_l2i *= 2;
         }
-        operandStack.push(ret_l2i);
+        operandStack.push(new MyObject(ret_l2i));
         break;
         
         
       case DREM:
       {
-          double d2 = (Double) operandStack.pop(); 
-          double d1 = (Double) operandStack.pop();
+          double d2 = (Double) operandStack.pop().getObject(); 
+          double d1 = (Double) operandStack.pop().getObject();
           double res;
           if(d1==Double.NaN || d2==Double.NaN)
             res = Double.NaN;
@@ -554,15 +560,15 @@ public class Main {
             res = d1;
           else
             res = (Double) (d1-(d2*((int)(d1/d2))));
-          operandStack.push(res);
+          operandStack.push(new MyObject(res));
       }
           break;      
           
       case DRETURN:
       {
-        double d1 = (Double) operandStack.pop();
+        double d1 = (Double) operandStack.pop().getObject();
         operandStack = callStack.pop();
-        operandStack.push(d1);
+        operandStack.push(new MyObject(d1));
       }
           break;
           
@@ -580,7 +586,7 @@ public class Main {
             int k = k1*(2^8) + k2;
             //fim
             
-            operandStack.push(k);
+            operandStack.push(new MyObject(k));
           } catch(NumberFormatException _) {
             try {
               //se receber a cadeia de bits, e o parseInt já transforma em inteiro:
@@ -594,9 +600,9 @@ public class Main {
               float k2 = Float.parseFloat(complementTwo);
               float k = k1*(2^8) + k2;
               //fim
-              operandStack.push(k);
+              operandStack.push(new MyObject(k));
             } catch(NumberFormatException __) {
-              operandStack.push(complementOne+complementTwo);
+              operandStack.push(new MyObject(complementOne+complementTwo));
             } 
           }
           break;
@@ -615,7 +621,7 @@ public class Main {
             long k = k1*(2^8) + k2;
             //fim
             
-            operandStack.push(k);
+            operandStack.push(new MyObject(k));
           } catch(NumberFormatException _) {
             try {
               //se receber a cadeia de bits, e o parseInt já transforma em inteiro:
@@ -629,7 +635,7 @@ public class Main {
               double k2 = Double.parseDouble(complementTwo);
               double k = k1*(2^8) + k2;
               //fim
-              operandStack.push(k);
+              operandStack.push(new MyObject(k));
             } catch(NumberFormatException __){
             
             }
@@ -637,44 +643,44 @@ public class Main {
           break;
       
       case ldiv:
-         long valB = (Long) operandStack.pop();
-         long valA = (Long) operandStack.pop();
+         long valB = (Long) operandStack.pop().getObject();
+         long valA = (Long) operandStack.pop().getObject();
          
          if(valB==0)
            throw (new RuntimeException("Arithmetic Exception"));
          else if(valB==-1 && valA==Long.MAX_VALUE)
          {
-           operandStack.push(valA);
+           operandStack.push(new MyObject(valA));
          }
          else
          {
-           operandStack.push(valA/valB); 
+           operandStack.push(new MyObject(valA/valB)); 
          }
           break;    
       
       case LADD:
         long myTmp_ladd;
-        long var_ladd1 = (Long) operandStack.pop();
-        long var_ladd2 = (Long) operandStack.pop();
+        long var_ladd1 = (Long) operandStack.pop().getObject();
+        long var_ladd2 = (Long) operandStack.pop().getObject();
         
         myTmp_ladd = var_ladd1 + var_ladd2;
-        operandStack.push(myTmp_ladd);
+        operandStack.push(new MyObject(myTmp_ladd));
         break;
         
       case LDC:
         try {
           int k = Integer.parseInt(complementOne);
-          operandStack.push(k);
+          operandStack.push(new MyObject(k));
         } catch(NumberFormatException _) {
           try {
             long k = Long.parseLong(complementOne);
-            operandStack.push(k);
+            operandStack.push(new MyObject(k));
           } catch(NumberFormatException __) {
             try {
               double k = Double.parseDouble(complementOne);
-              operandStack.push(k);
+              operandStack.push(new MyObject(k));
             } catch (NumberFormatException ___) {
-              operandStack.push(complementOne);
+              operandStack.push(new MyObject(complementOne));
             }
           } 
         }
@@ -687,7 +693,7 @@ public class Main {
           String fieldName = complementOne.substring(idx+1);
 					lastGet.add(fieldName);
 					System.out.println("LAST GET: "+lastGet);
-          operandStack.push(sa.getStatic(Class.forName(clazz), fieldName));
+          operandStack.push(new MyObject(sa.getStatic(Class.forName(clazz), fieldName)));
         } catch (Exception e) {
           throw new RuntimeException("check this!");
         }
@@ -717,8 +723,8 @@ public class Main {
 					}
 					lastGet.clear();//limpa
 					System.out.println("SET: "+set);	
-					Object o = operandStack.pop();
-					System.out.println("Objeto: " + o);
+					MyObject o = operandStack.pop();
+					System.out.println("Objeto: " + o.getObject());
           sa.putStatic(Class.forName(clazz), fieldName, o);
         } catch (Exception e) {
           e.printStackTrace();
@@ -727,7 +733,7 @@ public class Main {
         break;
 
       case NEW: 
-        operandStack.push(heap.newCell());
+        operandStack.push(new MyObject(heap.newCell()));
         break;
         
       case INVOKEDYNAMIC:
@@ -758,7 +764,7 @@ public class Main {
         
         operandStack = callStack.push(cNameDyn + mNameDyn);
         for (int j = 0 ; j < (int) listParametros.size(); ++j){
-          operandStack.store(listParametros.size()-j-1, listParametros.get(j));
+          operandStack.store(listParametros.size()-j-1, new MyObject(listParametros.get(j)));
         }
       break;
         
@@ -804,20 +810,20 @@ public class Main {
         } else {
           operandStack = callStack.push(cName + mName);
           for (int j = 0; j < list.size() ; j++) {
-            operandStack.store(list.size()-j-1, list.get(j));
+            operandStack.store(list.size()-j-1, new MyObject(list.get(j)));
           }
         }
         break;
 
       case PUTFIELD: 
         val = operandStack.pop();
-        HeapCell objRef = (HeapCell) operandStack.pop();
+        HeapCell objRef = (HeapCell) operandStack.pop().getObject();
         String fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
         objRef.store(fieldName, val);
         break;
 
       case GETFIELD: 
-        objRef = (HeapCell) operandStack.pop();
+        objRef = (HeapCell) operandStack.pop().getObject();
         fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
         operandStack.push(objRef.load(fieldName));
         break;
@@ -831,8 +837,8 @@ public class Main {
       case DMUL:
       case DDIV:
 
-        double d1 = (Double) operandStack.pop();
-        double d2 = (Double) operandStack.pop();
+        double d1 = (Double) operandStack.pop().getObject();
+        double d2 = (Double) operandStack.pop().getObject();
 
         double res;
         switch(kind) {
@@ -852,7 +858,7 @@ public class Main {
           throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
         }
 
-        operandStack.push(res);
+        operandStack.push(new MyObject(res));
         break;
 
 
@@ -868,8 +874,8 @@ public class Main {
       case IOR:
       case IXOR:
 
-        int val1 = (Integer) operandStack.pop();
-        int val2 = (Integer) operandStack.pop();
+        int val1 = (Integer) operandStack.pop().getObject();
+        int val2 = (Integer) operandStack.pop().getObject();
 
         switch(kind) {
         case IADD:
@@ -909,24 +915,24 @@ public class Main {
           throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
         }
 
-        operandStack.push(tmp);
+        operandStack.push(new MyObject(tmp));
         break;
 
       case LCMP:
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
-        operandStack.push( val1 == val2 ? 0 : (val1 < val2 ? -1 : 1));
+        val1 = (Integer) operandStack.pop().getObject();
+        val2 = (Integer) operandStack.pop().getObject();
+        operandStack.push(new MyObject(val1 == val2 ? 0 : (val1 < val2 ? -1 : 1)));
 
       case IRETURN:
-        val1 = (Integer) operandStack.pop();
+        val1 = (Integer) operandStack.pop().getObject();
         operandStack = callStack.pop();
-        operandStack.push(val1);
+        operandStack.push(new MyObject(val1));
         break;
 
       case INEG:
-        val1 = (Integer) operandStack.pop();
-        operandStack = callStack.pop();
-        operandStack.push(-val1);
+        val1 = (Integer) operandStack.pop().getObject();
+        operandStack = callStack.pop(); //PERA AQUI
+        operandStack.push(new MyObject(-val1));
         break;
 
       case POP:
@@ -936,7 +942,7 @@ public class Main {
       case F2I:
 
         int result = 0;
-        float value1 = (Float) operandStack.pop();
+        float value1 = (Float) operandStack.pop().getObject();
         if (value1 < 0) {
           result = (int) value1;
         } else if (value1 > 0) {
@@ -944,14 +950,14 @@ public class Main {
         } else {
           result = 0;
         }
-        operandStack.push(result);
+        operandStack.push(new MyObject(result));
 
         break;
 
       case F2L:
 
         long resultLong = 0;
-        float valueFloat = (Float) operandStack.pop();
+        float valueFloat = (Float) operandStack.pop().getObject();
         if (valueFloat < 0) {
           resultLong = (long) valueFloat;
         } else if (valueFloat > 0) {
@@ -959,53 +965,53 @@ public class Main {
         } else {
           resultLong = 0;
         }
-        operandStack.push(resultLong);
+        operandStack.push(new MyObject(resultLong));
 
         break;
 
       case FADD:
 
-        float float1 = (Float) operandStack.pop();
-        float float2 = (Float) operandStack.pop();
+        float float1 = (Float) operandStack.pop().getObject();
+        float float2 = (Float) operandStack.pop().getObject();
         float floatResult = float1 + float2;
-        operandStack.push(floatResult);
+        operandStack.push(new MyObject(floatResult));
 
         break;
 
       case LMUL:
-        long long1 = (Long) operandStack.pop();
-        long long2 = (Long) operandStack.pop();
+        long long1 = (Long) operandStack.pop().getObject();
+        long long2 = (Long) operandStack.pop().getObject();
         long longResult = long1 * long2;
-        operandStack.push(longResult);
+        operandStack.push(new MyObject(longResult));
 
         break;
 
       case LNEG:
-        long1 = (Long) operandStack.pop();
+        long1 = (Long) operandStack.pop().getObject();
         longResult = 0 - long1;
-        operandStack.push(longResult);
+        operandStack.push(new MyObject(longResult));
 
         break;
 
       case LOR:
-        long1 = (Long) operandStack.pop();
-        long2 = (Long) operandStack.pop();
+        long1 = (Long) operandStack.pop().getObject();
+        long2 = (Long) operandStack.pop().getObject();
         longResult = long1 | long2;
-        operandStack.push(longResult);
+        operandStack.push(new MyObject(longResult));
 
         break;
 
       case LREM:
-        long2 = (Long) operandStack.pop();
-        long1 = (Long) operandStack.pop();
+        long2 = (Long) operandStack.pop().getObject();
+        long1 = (Long) operandStack.pop().getObject();
         longResult = long1 - (long1 / long2) * long2;
-        operandStack.push(longResult);
+        operandStack.push(new MyObject(longResult));
 
         break;
 
       case IF:
-        val1 = (Integer) operandStack.pop();
-        val2 = (Integer) operandStack.pop();
+        val1 = (Integer) operandStack.pop().getObject();
+        val2 = (Integer) operandStack.pop().getObject();
 
         String op = complementOne;
         boolean shouldJump;
@@ -1041,12 +1047,12 @@ public class Main {
 
       case SIPUSH:
         // representing as integer (ignoring overflows)
-        operandStack.push(Integer.parseInt(complementOne));
+        operandStack.push(new MyObject(Integer.parseInt(complementOne)));
         break;
 
       case LOOKUPSWITCH:
 
-        val1 = (Integer) operandStack.pop();
+        val1 = (Integer) operandStack.pop().getObject();
         String[] parts = insn.substring(OPCODE.LOOKUPSWITCH.name().length()+1).trim().split("  ");
         String gotoLabel = null;
         for (String part : parts) {
@@ -1066,8 +1072,8 @@ public class Main {
         break;
         
       case D2F:
-        double value = (Double) operandStack.pop();
-        operandStack.push((float) value);
+        double value = (Double) operandStack.pop().getObject();
+        operandStack.push(new MyObject((float) value));
         break;
         
       case L2D:
@@ -1075,63 +1081,63 @@ public class Main {
         try {
           value_o = operandStack.pop();
           long value_long = (Long) value_o;
-          operandStack.push((double) value_long); 
+          operandStack.push(new MyObject((double) value_long)); 
         } catch (ClassCastException _) {
           int value_int = (Integer) value_o;
-          operandStack.push((double) value_int);
+          operandStack.push(new MyObject((double) value_int));
         }
         break;
 
       // ----------------------------------------------mra2--->
       case FASTORE:
         Object val_f = operandStack.pop();
-        int index_f = (Integer) operandStack.pop();
-        HeapCell arRef_f = (HeapCell) operandStack.pop();
-        arRef_f.store(index_f + "", val_f);
+        int index_f = (Integer) operandStack.pop().getObject();
+        HeapCell arRef_f = (HeapCell) operandStack.pop().getObject();
+        arRef_f.store(index_f + "", new MyObject(val_f));
         break;
         
       case FCMPG:
-        float val_g = (Float) operandStack.pop();
-        float val2_g = (Float) operandStack.pop();
+        float val_g = (Float) operandStack.pop().getObject();
+        float val2_g = (Float) operandStack.pop().getObject();
 
         if (val_g > val2_g) {
-          operandStack.push(1);
+          operandStack.push(new MyObject(1));
         } else if (val_g == val2_g) {
-          operandStack.push(0);
+          operandStack.push(new MyObject(0));
         } else {
-          operandStack.push(-1);
+          operandStack.push(new MyObject(-1));
         }
         break;
         
       case FCMPL:
-        float val_l = (Float) ((Double) operandStack.pop()).floatValue();
-        float val2_l = (Float) ((Double) operandStack.pop()).floatValue();
+        float val_l = (Float) ((Double) operandStack.pop().getObject()).floatValue();
+        float val2_l = (Float) ((Double) operandStack.pop().getObject()).floatValue();
 
         if (val_l > val2_l) {
-          operandStack.push(1);
+          operandStack.push(new MyObject(1));
         } else if (val_l == val2_l) {
-          operandStack.push(0);
+          operandStack.push(new MyObject(0));
         } else {
-          operandStack.push(-1);
+          operandStack.push(new MyObject(-1));
         }
         break;
         
       case FCONST:
         float tmp3 = Float.parseFloat(complementOne);
-        operandStack.push(tmp3);
+        operandStack.push(new MyObject(tmp3));
         break;
 
       case LRETURN:
-        long val3 = ((Integer) operandStack.pop()).longValue();
+        long val3 = ((Integer) operandStack.pop().getObject()).longValue();
         operandStack = callStack.pop();
-        operandStack.push(val3);
+        operandStack.push(new MyObject(val3));
         break;
 
       case LSHL:
       case LSHR:
 
-        int val5 = ((Integer) operandStack.pop()).intValue();
-        long val4 = ((Integer) operandStack.pop()).longValue();
+        int val5 = ((Integer) operandStack.pop().getObject()).intValue();
+        long val4 = ((Integer) operandStack.pop().getObject()).longValue();
         long resp2;
 
         switch (kind) {
@@ -1146,14 +1152,17 @@ public class Main {
               "Interpretation of Instruction undefined: " + kind);
         }
 
-        operandStack.push(resp2);
+        operandStack.push(new MyObject(resp2));
         break;
-
+       
+        /**
+         * A partir daqui
+         */
       case FDIV:
-        float f1 = (Float) operandStack.pop();
-        float f2 = (Float) operandStack.pop();
+        float f1 = (Float) operandStack.pop().getObject();
+        float f2 = (Float) operandStack.pop().getObject();
         float resp = f1 / f2;
-        operandStack.push(new Float(resp)); 
+        operandStack.push(new MyObject (new Float(resp))); 
         break;
 
       case LSTORE:
@@ -1165,61 +1174,61 @@ public class Main {
         break;
         
       case FMUL: 
-        float mf1 = ((Double) operandStack.pop()).floatValue();
-        float mf2 = ((Double) operandStack.pop()).floatValue();
+        float mf1 = ((Double) operandStack.pop().getObject()).floatValue();
+        float mf2 = ((Double) operandStack.pop().getObject()).floatValue();
         float r = mf1 * mf2;    
-        operandStack.push(r);           
+        operandStack.push(new MyObject(r));           
         break;
        
       case FNEG:
-        float f = ((Double) operandStack.pop()).floatValue();
+        float f = ((Double) operandStack.pop().getObject()).floatValue();
         operandStack = callStack.pop();
-        operandStack.push(-f);
+        operandStack.push(new MyObject(-f));
         break;
         
       case FREM: 
-        float fop1 = (Float) operandStack.pop();
-        float fop2 = (Float) operandStack.pop();
+        float fop1 = (Float) operandStack.pop().getObject();
+        float fop2 = (Float) operandStack.pop().getObject();
         float rep = (fop1 % fop2);
-        operandStack.push(new Float(rep));
+        operandStack.push(new MyObject(new Float(rep)));
         break;
 
       case FRETURN:
-        float fvalue = (Float) operandStack.pop();
+        float fvalue = (Float) operandStack.pop().getObject();
         operandStack = callStack.pop();
-        operandStack.push(fvalue);
+        operandStack.push(new MyObject(fvalue));
         break;
 
-      case FSTORE:
+      case FSTORE: //n mexi
         operandStack.store(Integer.parseInt(complementOne));
         break;
 
       case FSUB:
-        float ff1 = (Float) operandStack.pop();
-        float ff2 = (Float) operandStack.pop();
+        float ff1 = (Float) operandStack.pop().getObject();
+        float ff2 = (Float) operandStack.pop().getObject();
         float fresp = ff1 - ff2;
-        operandStack.push(fresp);
+        operandStack.push(new MyObject(fresp));
         break;
 
       case LSUB:
-        long l1 = (Long) operandStack.pop();
-        long l2 = (Long) operandStack.pop();
+        long l1 = (Long) operandStack.pop().getObject();
+        long l2 = (Long) operandStack.pop().getObject();
         long respl = l1 - l2;
-        operandStack.push(respl);
+        operandStack.push(new MyObject(respl));
 
         break;
 
       case LUSHR:
-        int lo1 = (Integer) operandStack.pop();
-        long lo2 = (Long) operandStack.pop();
+        int lo1 = (Integer) operandStack.pop().getObject();
+        long lo2 = (Long) operandStack.pop().getObject();
         long resu = lo2 >>> lo1;
-        operandStack.push(resu);
+        operandStack.push(new MyObject(resu));
         break;
 
       case NOP:
         break;
         
-      case POP2:
+      case POP2: //n mexi
         operandStack.pop();
 
         if (!operandStack.empty()) {
@@ -1230,7 +1239,7 @@ public class Main {
 
       case RET:
           operandStack.load(Integer.parseInt(complementOne));
-          i = lookupForLabel(labels, (String) operandStack.pop(), i);
+          i = lookupForLabel(labels, (String) operandStack.pop().getObject(), i);
           break;
         
       case GOTO_W:
@@ -1238,67 +1247,67 @@ public class Main {
           break;
         
       case SASTORE:
-          Object v = operandStack.pop();
-          int indx = (Integer) operandStack.pop();
-          HeapCell arref = (HeapCell) operandStack.pop();
+          MyObject v = operandStack.pop();
+          int indx = (Integer) operandStack.pop().getObject();
+          HeapCell arref = (HeapCell) operandStack.pop().getObject();
           arref.store(((short) indx)+"", v);
           break;
         
         case SALOAD:
-          int ind = (Integer) operandStack.pop();
-          HeapCell ref = (HeapCell) operandStack.pop();
-          operandStack.push((Integer) ref.load(ind+""));
+          int ind = (Integer) operandStack.pop().getObject();
+          HeapCell ref = (HeapCell) operandStack.pop().getObject();
+          operandStack.push(new MyObject((Integer) (ref.load(ind+"")).getObject()));
           break;
         
         case SWAP:
-          Object v1 = operandStack.pop();
-          Object v2 = operandStack.pop();
+          MyObject v1 = operandStack.pop();
+          MyObject v2 = operandStack.pop();
           operandStack.push(v1);
           operandStack.push(v2);
           break;      
         
         case I2D:
-          value = (Integer) operandStack.pop();
+          value = (Integer) operandStack.pop().getObject();
           double d = (double) value;
-          operandStack.push(d);
+          operandStack.push(new MyObject(d));
           break;
         
         case I2C:
-          value = (Integer) operandStack.pop();
+          value = (Integer) operandStack.pop().getObject();
           char c = (char) value;
-          operandStack.push((int) c);
+          operandStack.push(new MyObject((int) c));
           break;
         
         case I2B:
-            value = (Integer) operandStack.pop();
+            value = (Integer) operandStack.pop().getObject();
             byte b = (byte) value;
-            operandStack.push((int) b);
+            operandStack.push(new MyObject((int) b));
             break; 
 
         case I2F:
-          val1 = (Integer) operandStack.pop();
-          operandStack.push((float) val1);
+          val1 = (Integer) operandStack.pop().getObject();
+          operandStack.push(new MyObject((float) val1));
           break;
           
         case I2L:
-          val1 = (Integer) operandStack.pop();
-          operandStack.push((long) val1);
+          val1 = (Integer) operandStack.pop().getObject();
+          operandStack.push(new MyObject((long) val1));
           break;
           
         case I2S:
-          val1 = (Integer) operandStack.pop();
-          operandStack.push((short) val1);
+          val1 = (Integer) operandStack.pop().getObject();
+          operandStack.push(new MyObject((short) val1));
           break;
           
         case IFGT:
-          val1 = (Integer) operandStack.pop();
+          val1 = (Integer) operandStack.pop().getObject();
           if(val1 > 0){
             i = lookupForLabel(labels, complementTwo, i);
           }
           break;
           
         case IFLE:
-          val1 = (Integer) operandStack.pop();
+          val1 = (Integer) operandStack.pop().getObject();
           if(val1 <= 0){
             i = lookupForLabel(labels, complementTwo, i);
           }

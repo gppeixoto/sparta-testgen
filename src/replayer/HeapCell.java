@@ -6,18 +6,18 @@ import java.util.Map;
 public class HeapCell {
 
   // non-native
-  private Map<String, Object> map = new HashMap<String, Object>();
+  private Map<String, MyObject> map = new HashMap<String, MyObject>();
 
   public int getMapSize(){
     return map.size();
   }
   
-  public Object load(String name) {
+  public MyObject load(String name) {
     return map.get(name);
   }
 
-  public void store(String name, Object val) {
-    assert val instanceof HeapCell || val.getClass().isPrimitive();
+  public void store(String name, MyObject val) {
+    assert val.getObject() instanceof HeapCell || val.getClass().isPrimitive();
     map.put(name, val);
   }
 }
