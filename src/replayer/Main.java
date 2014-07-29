@@ -63,7 +63,7 @@ public class Main {
     } catch (FinishedExecutionException _) {
       System.out.println("  execution replayed");
     }
-    System.out.println("FLOWGRAPH: \n\n");
+    System.out.println("\nFLOWGRAPH:");
     System.out.println(m.flowGraph);
   }
 
@@ -168,10 +168,7 @@ public class Main {
         s.add(feature);
       }
     }
-    System.out.println("PERMISSIONS : \n\n\n\n" + permissions);
-    /**
-     * look across all instructions in the trace
-     */
+    System.out.println("PERMISSIONS : " + permissions);
     for(int i = 0; i < instructionTrace.size(); i++) {
       
       String insn = instructionTrace.get(i);
@@ -200,14 +197,12 @@ public class Main {
       String[] complements = extractComplements(splits);
       String complementOne = complements[0];
       String complementTwo = complements[1];
-      System.out.println("Virou " + complementOne + " e " + complementTwo);
 
       boolean isStatic = false;
 
       /**
        * decide which instruction to apply
        */
-      System.out.println("KIND: "+kind);
       switch (kind) {
 
       case ACONST: //extra case to simplify the '_'-handling code
@@ -735,15 +730,12 @@ public class Main {
         try {
           int idx = complementOne.lastIndexOf(".");
           String clazz = complementOne.substring(0, idx).replace('/', '.');//classe
-		  System.out.println("CLASSE PUTSTATIC: " + clazz);
-          String fieldName = complementOne.substring(idx+1);
-		  System.out.println("fieldName PUTSTATIC: " + fieldName);
+		  String fieldName = complementOne.substring(idx+1);
 		  Set<String> putstaticSET = permissions.get(complementOne);
 		  MyObject putstaticref = operandStack.pop();
 		  if (putstaticSET != null){
 		    putstaticref.getSet().addAll(putstaticSET);
 		    flowGraph.add(putstaticref.getSet(), putstaticSET);
-		    System.out.println("\nFLOWGRAPH: \n" + flowGraph);
 		  }
           sa.putStatic(Class.forName(clazz), fieldName, putstaticref);
         } catch (Exception e) {
@@ -839,7 +831,6 @@ public class Main {
         MyObject aux;
         for (int k = 0; k < numParams; k++) {
           aux = operandStack.pop();
-          System.out.println("\n\nadd: " + aux.getObject());
           list.add(aux);
         }
         
@@ -850,9 +841,7 @@ public class Main {
           if (permissions.containsKey(key)){
             Set<String> perm = permissions.get(key);
             if (!aux.getSet().isEmpty()){
-              //adiciona no flowgraph
               flowGraph.add(aux.getSet(), perm);
-              System.out.println("\nFLOWGRAPH\n" + flowGraph);
             }
             aux.getSet().addAll(permissions.get(key));
           }
@@ -883,12 +872,13 @@ public class Main {
         */
         Set<String> set = permissions.get(complementOne);
         if(set != null){
-          Set<String> newSet = val.getSet();
+          
+          Set<String> newSet = new HashSet<String>();
+          Set<String> auxSet = val.getSet();
+          newSet.addAll(auxSet);
           newSet.addAll(set);
           val.setFeatures(newSet);
-          //adiciona no flow graph
           flowGraph.add(val.getSet(), set);
-          System.out.println("\nFLOWGRAPH: \n"+ flowGraph);
         }
         objRef.store(fieldName, val);
         break;
@@ -897,9 +887,6 @@ public class Main {
         objRef = (HeapCell) operandStack.pop().getObject();
         fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
         operandStack.push(objRef.load(fieldName));
-        /* objRef = (HeapCell) operandStack.pop().getObj();
-        fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
-        operandStack.push((Values)objRef.load(fieldName));*/
         break;
 
       case LINENUMBER:
@@ -948,7 +935,6 @@ public class Main {
       case IOR:
       case IXOR:
         
-        System.out.println("AAAAAAAAAAAAAAAAAAAAAAA \n");
         MyObject v1 = operandStack.pop();
         MyObject v2 = operandStack.pop();
         int val1 = (Integer) v1.getObject();
@@ -994,7 +980,6 @@ public class Main {
         default:
           throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
         }
-        System.out.println("RESULT SET: " + resultset);
         operandStack.push(new MyObject(tmp,resultset));
         break;
 
@@ -1008,7 +993,6 @@ public class Main {
         MyObject ireturnref = operandStack.pop();
         val1 = (Integer) ireturnref.getObject();
         if (permissions.get(methodIRETURN) != null){
-          System.out.println("NAO FOI NULL");
           Set<String> setIreturn = ireturnref.getSet();
           setIreturn.addAll(permissions.get(methodIRETURN));
           ireturnref.setFeatures(setIreturn);

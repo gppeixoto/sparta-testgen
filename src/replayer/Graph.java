@@ -7,24 +7,19 @@ import java.util.HashMap;
 import java.util.Set;
 
 public class Graph {
- 
+
   Map<String, HashSet<String>> graph;
-  
+
   public Graph(){
     graph = new HashMap<String,HashSet<String>>();
   }
-  
+
   public void add(Set<String> source, Set<String> dest){
-    Set<String> newSource = new HashSet<String>();
-    for(String s : source){
-      newSource.add(s);
-    }
-    newSource.removeAll(dest);
-    for (String s : newSource){
+    source.removeAll(dest);
+    for (String s : source){
       for (String t : dest){
         if(s.equals(t))continue;
         if (graph.containsKey(s)){
-          
           graph.get(s).add(t);
         } else {
           HashSet<String> aux = new HashSet<String>();
@@ -34,7 +29,8 @@ public class Graph {
       }
     }
   }
-  
+
+
   @Override
   public String toString(){
     String ret = "";

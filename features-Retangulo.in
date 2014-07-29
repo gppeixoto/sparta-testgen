@@ -1,5 +1,5 @@
-GPS examples/Quadrado.x
-CAMERA examples/Quadrado.y
+GPS examples/Quadrado.altura
+CAMERA examples/Quadrado.largura
 SMS examples/Quadradomethod-0
 NAVEGADOR examples/Quadradomethod-1
-NAVEGADORB examples/Quadrado.y
+NAVEGADORB examples/Quadrado.largura

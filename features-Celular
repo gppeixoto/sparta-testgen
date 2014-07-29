@@ -1,0 +1,9 @@
+GPS examples/GPSgetLocation
+GPS examples/GPSsetNewPosition-0
+GPS examples/GPSsetNewPosition-1
+SMS_LOCATION examples/SMSnewMessageWithLocation-3
+SMS_GPS examples/SMS.gps
+SMS_MESSAGE examples/SMSgetMessage
+TEXT examples/Message.text
+GPS_LATITUDE examples/GPSgetLat
+GPS_LONGITUDE examples/GPSgetLongi
