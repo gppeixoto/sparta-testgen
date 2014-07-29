@@ -23,7 +23,7 @@ NAVEGADORB examples/Quadrado.y*/
 public class Retangulo {
   public static void main(String[] args) {
     Quadrado quad = new Quadrado(20, 10);
-    quad.method(5, 10);
-    
+    //quad.method(5, 10);
+    quad.x = quad.y;
   }
 }

@@ -63,7 +63,8 @@ public class Main {
     } catch (FinishedExecutionException _) {
       System.out.println("  execution replayed");
     }
-    System.out.println("PERMISSIONS: "+ m.permissions);
+    System.out.println("FLOWGRAPH: \n\n");
+    System.out.println(m.flowGraph);
   }
 
   enum OPCODE {ACONST, ACONST_NULL, ARETURN, ARRAYLENGTH, BALOAD, IFNULL,
@@ -872,7 +873,6 @@ public class Main {
 
       case PUTFIELD: 
         val = operandStack.pop();
-        //System.out.println("VAL: " + val);
         HeapCell objRef = (HeapCell) operandStack.pop().getObject();
         String fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
         /*
@@ -882,8 +882,6 @@ public class Main {
          *      atual de features
         */
         Set<String> set = permissions.get(complementOne);
-        System.out.println("SET: "+ set);
-        System.out.println("fn: "+fieldName);
         if(set != null){
           Set<String> newSet = val.getSet();
           newSet.addAll(set);
@@ -892,7 +890,6 @@ public class Main {
           flowGraph.add(val.getSet(), set);
           System.out.println("\nFLOWGRAPH: \n"+ flowGraph);
         }
-        System.out.println("SET de " + fieldName + ": " + val.getSet());
         objRef.store(fieldName, val);
         break;
 

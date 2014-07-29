@@ -1,4 +1,5 @@
-SHRINK examples/Geometryshrink
-RADIUS examples/GeometrygetRadius
-LENGTH examples/Geometry.length
-HEIGHT examples/Geometry.height
+GPS examples/Quadrado.x
+CAMERA examples/Quadrado.y
+SMS examples/Quadradomethod-0
+NAVEGADOR examples/Quadradomethod-1
+NAVEGADORB examples/Quadrado.y

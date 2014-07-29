@@ -22,7 +22,6 @@ class OperandStack {
 
   public void store(int local) {
     MyObject aux = stack.pop();
-    System.out.println("STORE:"+aux.getSet());
     locals.put(local, aux);
   }
 
