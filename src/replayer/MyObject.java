@@ -28,7 +28,7 @@ public class MyObject {
 		this.obj = obj;
 	}
 
-	public void setFeatures(HashSet<String> features){
+	public void setFeatures(Set<String> features){
 		this.features = features;
 	}
 }

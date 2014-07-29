@@ -10,8 +10,10 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Main {
 
@@ -23,18 +25,18 @@ public class Main {
   OperandStack operandStack;
   CallStack callStack;
   StaticArea sa;
-  Map<String,ArrayList<String>> set;//variavel pra variaveis que influenciam no resultado da variavel
-	Map<String, String> varToFeature;
-	ArrayList<String> lastGet;
-  public Main(List<String> input) {
+  Map<String,Set<String>> permissions;
+  List<String> features;
+  Graph flowGraph;
+  public Main(List<String> input,List<String> mp) {
     instructionTrace = input;
     heap = new Heap(); 
     callStack = new CallStack();
     operandStack = callStack.push("main");
     sa = new StaticArea();
-		set = new HashMap<String,ArrayList<String>>();
-		varToFeature = new HashMap<String, String>();
-		lastGet = new ArrayList<String>();
+    features = mp;
+    permissions = new HashMap<String, Set<String>>();
+    flowGraph = new Graph();
   }
 
   public static void main(String[] args) throws Exception {
@@ -48,19 +50,20 @@ public class Main {
     }
     br.close();   
 		//read features
-    /*List<String> buffer2 = new ArrayList<String>();
+    List<String> buffer2 = new ArrayList<String>();
     br = new BufferedReader(new FileReader("features.in"));
     while ((s = br.readLine()) != null) {
       buffer2.add(s.trim());
     }
-    br.close(); */
+    br.close(); 
     // replay
+    Main m = new Main(buffer,buffer2);
     try {
-      (new Main(buffer)).replay();
+      m.replay();
     } catch (FinishedExecutionException _) {
       System.out.println("  execution replayed");
     }
-
+    System.out.println("PERMISSIONS: "+ m.permissions);
   }
 
   enum OPCODE {ACONST, ACONST_NULL, ARETURN, ARRAYLENGTH, BALOAD, IFNULL,
@@ -150,6 +153,21 @@ public class Main {
      */
     Map<String, Integer> labels = new HashMap<String, Integer>();
 
+    //permissions
+    for(String line : features){
+      String[] p = line.split(" ");
+      String feature = p[0];
+      String attribute = p[1];
+      Set<String> s = permissions.get(attribute);
+      Set<String> set = new HashSet<String>();
+      if(s == null){
+        set.add(feature);
+        permissions.put(attribute,set);
+      }else{
+        s.add(feature);
+      }
+    }
+    System.out.println("PERMISSIONS : \n\n\n\n" + permissions);
     /**
      * look across all instructions in the trace
      */
@@ -188,6 +206,7 @@ public class Main {
       /**
        * decide which instruction to apply
        */
+      System.out.println("KIND: "+kind);
       switch (kind) {
 
       case ACONST: //extra case to simplify the '_'-handling code
@@ -196,7 +215,13 @@ public class Main {
          break;
         
       case ARETURN:
+          String methodARETURN = operandStack.getMethodName(); //pega nome do metodo do topo da pilha
           MyObject objectref = operandStack.pop();
+          if (permissions.get(methodARETURN) != null){
+            Set<String> setAreturn = objectref.getSet();
+            setAreturn.addAll(permissions.get(methodARETURN));
+            objectref.setFeatures(setAreturn);
+          }
           operandStack = callStack.pop();
           operandStack.push(objectref);
           break;
@@ -235,7 +260,7 @@ public class Main {
         } 
         
         // Colocando na operandStack
-        operandStack.push(new MyObject((Object)inteiroCarregar));
+        operandStack.push(new MyObject(inteiroCarregar));
         break;
         
       case IFNULL:
@@ -352,31 +377,32 @@ public class Main {
        */
       case DUP:
         if (complementOne != null) {
-          Object operand1;
-          Object operand2;
+          MyObject operand1;
+          MyObject operand2;
           
           if (complementOne.equals("X1")) {
-            operand1 = operandStack.pop().getObject();
-            operand2 = operandStack.pop().getObject();
+            operand1 = operandStack.pop();
+            operand2 = operandStack.pop();
             
-            operandStack.push(new MyObject(operand1));
-            operandStack.push(new MyObject(operand2));
-            operandStack.push(new MyObject(operand1));
+            operandStack.push(operand1);
+            operandStack.push(operand2);
+            operandStack.push(operand1);
 
           } else if (complementOne.equals("X2")) {
-            operand1 = operandStack.pop().getObject();
-            operand2 = operandStack.pop().getObject();
+            operand1 = operandStack.pop();
+            operand2 = operandStack.pop();
             
-            if ((!(operand1 instanceof Double) || !(operand1 instanceof Long)) && ((operand2 instanceof Double) || (operand2 instanceof Long))) {
-              operandStack.push(new MyObject(operand1));
-              operandStack.push(new MyObject(operand2));
-              operandStack.push(new MyObject(operand1));
+            if ((!(operand1.getObject() instanceof Double) || !(operand1.getObject() instanceof Long)) 
+                && ((operand2.getObject() instanceof Double) || (operand2.getObject() instanceof Long))) {
+              operandStack.push(operand1);
+              operandStack.push(operand2);
+              operandStack.push(operand1);
             } else {
-              Object operand3 = operandStack.pop().getObject();
-              operandStack.push(new MyObject(operand1));
-              operandStack.push(new MyObject(operand3));
-              operandStack.push(new MyObject(operand2));
-              operandStack.push(new MyObject(operand1));
+              MyObject operand3 = operandStack.pop();
+              operandStack.push(operand1);
+              operandStack.push(operand3);
+              operandStack.push(operand2);
+              operandStack.push(operand1);
             }
           } else {
             throw new RuntimeException("Unknown case");
@@ -397,7 +423,7 @@ public class Main {
                   operandStack.push(value1);
                   operandStack.push(value2);
               }
-              operandStack.push(new MyObject(value1));
+              operandStack.push(value1);
           }else{
               //Categoria 1
               MyObject value1 = operandStack.pop();
@@ -566,9 +592,16 @@ public class Main {
           
       case DRETURN:
       {
-        double d1 = (Double) operandStack.pop().getObject();
+        String methodDRETURN = operandStack.getMethodName();
+        MyObject dreturnref = operandStack.pop();
+        double d1 = (Double) dreturnref.getObject();
+        if (permissions.get(methodDRETURN) != null){
+          Set<String> setDRETURN = dreturnref.getSet();
+          setDRETURN.addAll(permissions.get(methodDRETURN));
+          dreturnref.setFeatures(setDRETURN);
+        }
         operandStack = callStack.pop();
-        operandStack.push(new MyObject(d1));
+        operandStack.push(dreturnref);
       }
           break;
           
@@ -691,9 +724,7 @@ public class Main {
           int idx = complementOne.lastIndexOf(".");
           String clazz = complementOne.substring(0, idx).replace('/', '.');
           String fieldName = complementOne.substring(idx+1);
-					lastGet.add(fieldName);
-					System.out.println("LAST GET: "+lastGet);
-          operandStack.push(new MyObject(sa.getStatic(Class.forName(clazz), fieldName)));
+          operandStack.push(sa.getStatic(Class.forName(clazz), fieldName));
         } catch (Exception e) {
           throw new RuntimeException("check this!");
         }
@@ -706,26 +737,14 @@ public class Main {
 		  System.out.println("CLASSE PUTSTATIC: " + clazz);
           String fieldName = complementOne.substring(idx+1);
 		  System.out.println("fieldName PUTSTATIC: " + fieldName);
-					ArrayList<String> variables = set.get(fieldName);
-					if(variables == null){
-						System.out.println("NULL");
-						System.out.println("LAST GET 2:" +lastGet);
-						ArrayList<String> oi = new ArrayList<String>();
-						for(String s : lastGet){
-							oi.add(s);						
-						}
-						set.put(fieldName,oi);//coloca todas as variaveis no mapa		
-					}else{
-						for(String s : lastGet){//pra todas as variaveis, adiciona no set se nao tiver la
-							if(!variables.contains(s))variables.add(s);					
-						}
-						set.put(fieldName,variables);					
-					}
-					lastGet.clear();//limpa
-					System.out.println("SET: "+set);	
-					MyObject o = operandStack.pop();
-					System.out.println("Objeto: " + o.getObject());
-          sa.putStatic(Class.forName(clazz), fieldName, o);
+		  Set<String> putstaticSET = permissions.get(complementOne);
+		  MyObject putstaticref = operandStack.pop();
+		  if (putstaticSET != null){
+		    putstaticref.getSet().addAll(putstaticSET);
+		    flowGraph.add(putstaticref.getSet(), putstaticSET);
+		    System.out.println("\nFLOWGRAPH: \n" + flowGraph);
+		  }
+          sa.putStatic(Class.forName(clazz), fieldName, putstaticref);
         } catch (Exception e) {
           e.printStackTrace();
           throw new RuntimeException("check this!");
@@ -749,18 +768,18 @@ public class Main {
         
         List<Object> listParametros = new ArrayList<Object>();
         for (int k = 0; k < numParametros; k++) {
-          listParametros.add(operandStack.pop());
+          listParametros.add(operandStack.pop().getObject());
         }
         
-        Object methodType = operandStack.pop();
-        Object methodName = operandStack.pop();
-        Object methodLookup = operandStack.pop();
-        Object methodHandle = operandStack.pop();
+        MyObject methodType = operandStack.pop();
+        MyObject methodName = operandStack.pop();
+        MyObject methodLookup = operandStack.pop();
+        MyObject methodHandle = operandStack.pop();
         
-        listParametros.add(methodType);
-        listParametros.add(methodName);
-        listParametros.add(methodLookup);
-        listParametros.add(methodHandle);
+        listParametros.add(methodType.getObject());
+        listParametros.add(methodName.getObject());
+        listParametros.add(methodLookup.getObject());
+        listParametros.add(methodHandle.getObject());
         
         operandStack = callStack.push(cNameDyn + mNameDyn);
         for (int j = 0 ; j < (int) listParametros.size(); ++j){
@@ -796,14 +815,14 @@ public class Main {
             skip = true;
           }
         }
-
-        List<Object> list = new ArrayList<Object>();
+        /**
+         * List<Object> list = new ArrayList<Object>();
         for (int k = 0; k < numParams; k++) {
-          list.add(operandStack.pop());
+          list.add(operandStack.pop().getObject());
         }
         // this reference
         if (!isStatic) {
-          list.add(operandStack.pop());
+          list.add(operandStack.pop().getObject());
         }
         if (skip) {
           // ASSUMING NO RELEVANT MUTATION
@@ -814,11 +833,66 @@ public class Main {
           }
         }
         break;
+         */
+        List<MyObject> list = new ArrayList<MyObject>();
+        MyObject aux;
+        for (int k = 0; k < numParams; k++) {
+          aux = operandStack.pop();
+          System.out.println("\n\nadd: " + aux.getObject());
+          list.add(aux);
+        }
+        
+        int aux_var = 0;
+        for (int k=list.size()-1; k>=0; --k, ++aux_var){
+          aux = list.get(k);
+          String key = cName+mName+"-"+(aux_var+"");
+          if (permissions.containsKey(key)){
+            Set<String> perm = permissions.get(key);
+            if (!aux.getSet().isEmpty()){
+              //adiciona no flowgraph
+              flowGraph.add(aux.getSet(), perm);
+              System.out.println("\nFLOWGRAPH\n" + flowGraph);
+            }
+            aux.getSet().addAll(permissions.get(key));
+          }
+        }
+        // this reference
+        if (!isStatic) {
+          list.add(operandStack.pop());
+        }
+        if (skip) {
+          // ASSUMING NO RELEVANT MUTATION
+        } else {
+          operandStack = callStack.push(cName + mName);
+          for (int j = 0; j < list.size() ; j++) {
+            operandStack.store(list.size()-j-1, (list.get(j)));
+          }
+        }
+        break;
 
       case PUTFIELD: 
         val = operandStack.pop();
+        //System.out.println("VAL: " + val);
         HeapCell objRef = (HeapCell) operandStack.pop().getObject();
         String fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
+        /*
+         * vê quais são as features às quais o atributo está associada no arquivo features.in
+         * se estiver associado à alguma feature, 
+         *      então une essa feature ao seu conjunto
+         *      atual de features
+        */
+        Set<String> set = permissions.get(complementOne);
+        System.out.println("SET: "+ set);
+        System.out.println("fn: "+fieldName);
+        if(set != null){
+          Set<String> newSet = val.getSet();
+          newSet.addAll(set);
+          val.setFeatures(newSet);
+          //adiciona no flow graph
+          flowGraph.add(val.getSet(), set);
+          System.out.println("\nFLOWGRAPH: \n"+ flowGraph);
+        }
+        System.out.println("SET de " + fieldName + ": " + val.getSet());
         objRef.store(fieldName, val);
         break;
 
@@ -826,6 +900,9 @@ public class Main {
         objRef = (HeapCell) operandStack.pop().getObject();
         fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
         operandStack.push(objRef.load(fieldName));
+        /* objRef = (HeapCell) operandStack.pop().getObj();
+        fieldName = complementOne.substring(complementOne.lastIndexOf(".")+1);
+        operandStack.push((Values)objRef.load(fieldName));*/
         break;
 
       case LINENUMBER:
@@ -873,10 +950,16 @@ public class Main {
       case IAND:
       case IOR:
       case IXOR:
-
-        int val1 = (Integer) operandStack.pop().getObject();
-        int val2 = (Integer) operandStack.pop().getObject();
-
+        
+        System.out.println("AAAAAAAAAAAAAAAAAAAAAAA \n");
+        MyObject v1 = operandStack.pop();
+        MyObject v2 = operandStack.pop();
+        int val1 = (Integer) v1.getObject();
+        int val2 = (Integer) v2.getObject();
+        Set<String> resultset = new HashSet<String>();
+        resultset.addAll(v2.getSet());
+        resultset.addAll(v1.getSet());
+        
         switch(kind) {
         case IADD:
           tmp = val1 + val2;
@@ -914,8 +997,8 @@ public class Main {
         default:
           throw new RuntimeException("Interpretation of Instruction undefined: " + kind);
         }
-
-        operandStack.push(new MyObject(tmp));
+        System.out.println("RESULT SET: " + resultset);
+        operandStack.push(new MyObject(tmp,resultset));
         break;
 
       case LCMP:
@@ -924,9 +1007,17 @@ public class Main {
         operandStack.push(new MyObject(val1 == val2 ? 0 : (val1 < val2 ? -1 : 1)));
 
       case IRETURN:
-        val1 = (Integer) operandStack.pop().getObject();
+        String methodIRETURN = operandStack.getMethodName();
+        MyObject ireturnref = operandStack.pop();
+        val1 = (Integer) ireturnref.getObject();
+        if (permissions.get(methodIRETURN) != null){
+          System.out.println("NAO FOI NULL");
+          Set<String> setIreturn = ireturnref.getSet();
+          setIreturn.addAll(permissions.get(methodIRETURN));
+          ireturnref.setFeatures(setIreturn);
+        }
         operandStack = callStack.pop();
-        operandStack.push(new MyObject(val1));
+        operandStack.push(ireturnref);
         break;
 
       case INEG:
@@ -1077,23 +1168,23 @@ public class Main {
         break;
         
       case L2D:
-        Object value_o = null;
+        MyObject value_o = null;
         try {
           value_o = operandStack.pop();
-          long value_long = (Long) value_o;
+          long value_long = (Long) value_o.getObject();
           operandStack.push(new MyObject((double) value_long)); 
         } catch (ClassCastException _) {
-          int value_int = (Integer) value_o;
+          int value_int = (Integer) value_o.getObject();
           operandStack.push(new MyObject((double) value_int));
         }
         break;
 
       // ----------------------------------------------mra2--->
       case FASTORE:
-        Object val_f = operandStack.pop();
+        MyObject val_f = operandStack.pop();
         int index_f = (Integer) operandStack.pop().getObject();
         HeapCell arRef_f = (HeapCell) operandStack.pop().getObject();
-        arRef_f.store(index_f + "", new MyObject(val_f));
+        arRef_f.store(index_f + "", val_f);
         break;
         
       case FCMPG:
@@ -1128,9 +1219,17 @@ public class Main {
         break;
 
       case LRETURN:
-        long val3 = ((Integer) operandStack.pop().getObject()).longValue();
+        String methodLRETURN = operandStack.getMethodName();
+        MyObject lreturnref = operandStack.pop();
+        long val_long = (Long) lreturnref.getObject();
+        if (permissions.get(methodLRETURN) != null){
+          Set<String> setlreturn = lreturnref.getSet();
+          setlreturn.addAll(permissions.get(methodLRETURN));
+          lreturnref.setFeatures(setlreturn);
+        }
         operandStack = callStack.pop();
-        operandStack.push(new MyObject(val3));
+        operandStack.push(lreturnref);
+
         break;
 
       case LSHL:
@@ -1155,9 +1254,6 @@ public class Main {
         operandStack.push(new MyObject(resp2));
         break;
        
-        /**
-         * A partir daqui
-         */
       case FDIV:
         float f1 = (Float) operandStack.pop().getObject();
         float f2 = (Float) operandStack.pop().getObject();
@@ -1182,7 +1278,7 @@ public class Main {
        
       case FNEG:
         float f = ((Double) operandStack.pop().getObject()).floatValue();
-        operandStack = callStack.pop();
+        //operandStack = callStack.pop();
         operandStack.push(new MyObject(-f));
         break;
         
@@ -1194,9 +1290,17 @@ public class Main {
         break;
 
       case FRETURN:
-        float fvalue = (Float) operandStack.pop().getObject();
+        String methodFRETURN = operandStack.getMethodName();
+        MyObject freturnref = operandStack.pop();
+        float val_float = (Float) freturnref.getObject();
+        if (permissions.get(methodFRETURN) != null){
+          Set<String> setfreturn = freturnref.getSet();
+          setfreturn.addAll(permissions.get(methodFRETURN));
+          freturnref.setFeatures(setfreturn);
+        }
         operandStack = callStack.pop();
-        operandStack.push(new MyObject(fvalue));
+        operandStack.push(freturnref);
+
         break;
 
       case FSTORE: //n mexi
@@ -1260,8 +1364,8 @@ public class Main {
           break;
         
         case SWAP:
-          MyObject v1 = operandStack.pop();
-          MyObject v2 = operandStack.pop();
+          v1 = operandStack.pop();
+          v2 = operandStack.pop();
           operandStack.push(v1);
           operandStack.push(v2);
           break;      

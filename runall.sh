@@ -10,8 +10,11 @@ PGMS=(
 #"examples.RefArrays"
 #"examples.Enum"
 #"examples.Switch"
-"examples.StaticRef"
-# "instrumentation.examples.LibraryClasses"
+#"examples.StaticRef"
+#"examples.Retangulo"
+#"instrumentation.examples.LibraryClasses"
+#"examples.SecondTest"
+"examples.Geometry"
 )
 
 ## compile all the code outside Eclipse

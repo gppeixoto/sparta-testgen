@@ -21,7 +21,9 @@ class OperandStack {
   }
 
   public void store(int local) {
-    locals.put(local, stack.pop());
+    MyObject aux = stack.pop();
+    System.out.println("STORE:"+aux.getSet());
+    locals.put(local, aux);
   }
 
   public void store(int j, MyObject object) {
@@ -47,6 +49,9 @@ class OperandStack {
   public boolean empty() {
     return stack.empty();
   }
-
+  
+  public String getMethodName(){
+    return this.mName;
+  }
 
 }

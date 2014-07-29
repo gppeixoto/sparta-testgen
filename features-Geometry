@@ -1,0 +1,4 @@
+SHRINK examples/Geometryshrink
+RADIUS examples/GeometrygetRadius
+LENGTH examples/Geometry.length
+HEIGHT examples/Geometry.height
