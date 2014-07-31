@@ -1,5 +1,2 @@
-ALTURA examples/Quadrado.altura
-LARGURA examples/Quadrado.largura
-FIRST_DIMENSION examples/QuadradochangeDimension-0
-SECOND_DIMENSION examples/QuadradochangeDimension-1
-COLOR examples/Quadrado.largura
+MUSICA examples/Song.titulo
+FACEBOOK examples/FacebookgetTituloMusica

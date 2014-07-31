@@ -11,8 +11,9 @@ PGMS=(
 #"examples.Enum"
 #"examples.Switch"
 #"examples.StaticRef"
-"examples.Retangulo"
+#"examples.Retangulo"
 #"examples.Celular"
+"examples.Facebook"
 #"instrumentation.examples.LibraryClasses"
 )
 
